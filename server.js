@@ -6,44 +6,58 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Koneksi database
+// =====================
+// CONNECT DATABASE
+// =====================
 connectDB();
 
-// Middleware
+// =====================
+// MIDDLEWARE
+// =====================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files (frontend HTML/CSS/JS)
+// =====================
+// STATIC FILES
+// =====================
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve foto laporan dan avatar
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes API
-app.use('/api/auth',    require('./routes/auth'));
+// =====================
+// ROUTES
+// =====================
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/laporan', require('./routes/laporan'));
-app.use('/api/admin',   require('./routes/admin'));
-app.use('/api/avatar',  require('./routes/avatar'));   // BARU: upload foto profil
-app.use('/api/rekap',   require('./routes/rekap'));    // BARU: rekap PDF
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/avatar', require('./routes/avatar'));
+app.use('/api/rekap', require('./routes/rekap'));
 
-// Halaman utama
+// =====================
+// HOME ROUTE
+// =====================
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Handle 404
+// =====================
+// 404 HANDLER
+// =====================
 app.use((req, res) => {
   res.status(404).json({ pesan: 'Endpoint tidak ditemukan' });
 });
 
+// =====================
+// SERVER (FIX RAILWAY PORT)
+// =====================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`
-  ╔══════════════════════════════════════════╗
-  ║    🚧 SIJARAK Server Berjalan! 🚧        ║
-  ║    http://localhost:${PORT}                ║
-  ║    Fitur baru: Avatar + Rekap PDF        ║
-  ╚══════════════════════════════════════════╝
+  ╔══════════════════════════════════════╗
+  ║   🚧 SIJARAK SERVER ONLINE 🚧        ║
+  ║   Port : ${PORT}                      ║
+  ║   Status: Running di Railway         ║
+  ╚══════════════════════════════════════╝
   `);
 });
