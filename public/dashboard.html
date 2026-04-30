@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — SIJARAK</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html"><div class="logo-icon">🚧</div>SIJARAK</a>
+  <div class="navbar-menu">
+    <a class="nav-link" href="index.html">Beranda</a>
+    <div style="display:flex;align-items:center;gap:0.75rem">
+      <span style="font-size:0.875rem;color:var(--gray-500)">Halo, <strong id="nav-nama">User</strong></span>
+      <button class="btn btn-secondary btn-sm" onclick="keluar()">Keluar</button>
+    </div>
+  </div>
+</nav>
+
+<div class="toast-container" id="toast-container"></div>
+
+<div class="layout-with-sidebar">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <ul class="sidebar-menu">
+      <li class="sidebar-item"><a href="#" class="active" onclick="tampilkanSection('beranda',this)"><span class="icon">🏠</span> Beranda</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('laporan-saya',this)"><span class="icon">📋</span> Laporan Saya</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('buat-laporan',this)"><span class="icon">➕</span> Buat Laporan</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('riwayat',this)"><span class="icon">🕐</span> Riwayat</a></li>
+      <li class="sidebar-item"><a href="profil.html"><span class="icon">👤</span> Profil &amp; Avatar</a></li>
+      <li class="sidebar-item" style="margin-top:1rem;border-top:1px solid var(--gray-200);padding-top:1rem">
+        <a href="index.html"><span class="icon">🌐</span> Lihat Publik</a>
+      </li>
+    </ul>
+
+    <!-- Poin Card di Sidebar -->
+    <div class="poin-card" style="margin-top:1.5rem" id="sidebar-poin">
+      <div class="poin-label">Total Poin Anda</div>
+      <div class="poin-display" id="sidebar-poin-angka">0</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem;opacity:.85" id="sidebar-poin-info">0 laporan dikirim</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Section: Beranda -->
+    <div id="section-beranda">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">Selamat Datang! 👋</h2>
+
+      <div class="grid-4" style="margin-bottom:1.5rem" id="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--primary-light)">📋</div>
+          <div><div class="stat-number" id="s-total">0</div><div class="stat-label">Total Laporan</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dbeafe">⏳</div>
+          <div><div class="stat-number" id="s-pending">0</div><div class="stat-label">Pending</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7">✅</div>
+          <div><div class="stat-number" id="s-selesai">0</div><div class="stat-label">Selesai</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef3c7">⭐</div>
+          <div><div class="stat-number" id="s-poin">0</div><div class="stat-label">Poin Reward</div></div>
+        </div>
+      </div>
+
+      <!-- Quick Action -->
+      <div class="card mb-3">
+        <div class="card-body" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <h4 style="font-weight:700;margin-bottom:0.25rem">Ada jalan rusak di sekitar Anda?</h4>
+            <p class="text-muted text-sm">Laporkan sekarang dan dapatkan poin reward!</p>
+          </div>
+          <button class="btn btn-primary" onclick="tampilkanSection('buat-laporan')">📸 Buat Laporan Sekarang</button>
+        </div>
+      </div>
+
+      <!-- Laporan Terbaru Milik User -->
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <h4 style="font-weight:700">Laporan Terbaru Saya</h4>
+          <a href="#" onclick="tampilkanSection('laporan-saya')" class="text-sm" style="color:var(--primary)">Lihat Semua →</a>
+        </div>
+        <div id="laporan-preview">
+          <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Laporan Saya -->
+    <div id="section-laporan-saya" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h2 style="font-size:1.5rem;font-weight:800">Laporan Saya</h2>
+        <button class="btn btn-primary btn-sm" onclick="tampilkanSection('buat-laporan')">+ Buat Laporan</button>
+      </div>
+      <div id="laporan-saya-list">
+        <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+      </div>
+    </div>
+
+    <!-- Section: Buat Laporan -->
+    <div id="section-buat-laporan" style="display:none">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">📸 Buat Laporan Baru</h2>
+      <div class="card">
+        <div class="card-body">
+          <div id="form-alert"></div>
+          <form id="form-laporan" onsubmit="kirimLaporan(event)">
+            <div class="form-group">
+              <label class="form-label">Judul Laporan <span class="required">*</span></label>
+              <input type="text" class="form-control" name="judul" placeholder="Contoh: Jalan berlubang besar di depan SDN 5" required minlength="5" maxlength="100">
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Tingkat Kerusakan <span class="required">*</span></label>
+                <select class="form-control" name="tingkatKerusakan" required onchange="perbaruiPoin(this.value)">
+                  <option value="">-- Pilih Tingkat --</option>
+                  <option value="ringan">🟢 Ringan (10 poin)</option>
+                  <option value="sedang">🟡 Sedang (20 poin)</option>
+                  <option value="berat">🟠 Berat (35 poin)</option>
+                  <option value="sangat_berat">🔴 Sangat Berat (50 poin)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Jenis Kerusakan <span class="required">*</span></label>
+                <select class="form-control" name="jenisKerusakan" required>
+                  <option value="">-- Pilih Jenis --</option>
+                  <option value="berlubang">🕳 Berlubang</option>
+                  <option value="retak">⚡ Retak/Pecah</option>
+                  <option value="amblas">⬇ Amblas/Turun</option>
+                  <option value="longsor">🌊 Longsor</option>
+                  <option value="banjir">💧 Tergenang</option>
+                  <option value="lainnya">📌 Lainnya</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Deskripsi <span class="required">*</span></label>
+              <textarea class="form-control" name="deskripsi" rows="4" placeholder="Jelaskan kondisi kerusakan secara detail..." required minlength="10" maxlength="1000"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alamat Lokasi <span class="required">*</span></label>
+              <input type="text" class="form-control" name="alamat" placeholder="Jl. Contoh No. 1, RT/RW, Kelurahan, Kecamatan" required>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Kecamatan</label>
+                <input type="text" class="form-control" name="kecamatan" placeholder="Kecamatan">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Kota</label>
+                <input type="text" class="form-control" name="kota" placeholder="Kota/Kabupaten">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Panjang Kerusakan (m)</label>
+                <input type="number" class="form-control" name="panjangKerusakan" placeholder="0" min="0" step="0.1">
+              </div>
+            </div>
+
+            <!-- Upload Foto -->
+            <div class="form-group">
+              <label class="form-label">Foto Bukti (Maks 5 foto, maks 5MB per foto)</label>
+              <div class="upload-area" id="upload-area" onclick="document.getElementById('foto-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+                <div class="upload-icon">📷</div>
+                <p><strong>Klik untuk pilih foto</strong> atau drag &amp; drop di sini</p>
+                <p>JPG, PNG, WEBP · Maks 5MB per file</p>
+              </div>
+              <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="previewFoto(this)">
+              <div class="preview-grid" id="foto-preview"></div>
+            </div>
+
+            <!-- Preview Poin -->
+            <div id="poin-preview" style="display:none;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:10px;padding:1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">⭐</span>
+              <div>
+                <div style="font-weight:700;color:var(--primary-dark)" id="poin-label">Anda akan mendapat 0 poin</div>
+                <div style="font-size:0.8rem;color:var(--gray-600)">+ bonus 15 poin jika laporan diselesaikan</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem">
+              <button type="submit" class="btn btn-primary btn-lg" id="btn-kirim">🚀 Kirim Laporan</button>
+              <button type="reset" class="btn btn-secondary btn-lg" onclick="resetForm()">Reset</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Riwayat -->
+    <div id="section-riwayat" style="display:none">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">🕐 Riwayat Aktivitas</h2>
+      <div class="card">
+        <div class="card-body" id="riwayat-content">
+          <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Profil -->
+    <div id="section-profil" style="display:none">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">👤 Profil Saya</h2>
+      <div class="grid-2" style="align-items:start">
+        <div class="card">
+          <div class="card-body">
+            <div style="text-align:center;margin-bottom:1.5rem">
+              <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;margin:0 auto 0.75rem" id="profil-avatar">U</div>
+              <h3 style="font-weight:700" id="profil-nama">-</h3>
+              <span class="badge badge-pending" id="profil-role">User</span>
+            </div>
+            <form onsubmit="updateProfil(event)">
+              <div class="form-group">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" class="form-control" id="profil-nama-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="profil-email" disabled>
+              </div>
+              <div class="form-group">
+                <label class="form-label">No. Telepon</label>
+                <input type="tel" class="form-control" id="profil-telp" placeholder="08xx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Alamat</label>
+                <textarea class="form-control" id="profil-alamat" rows="2" placeholder="Alamat Anda"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </form>
+          </div>
+        </div>
+        <div>
+          <div class="poin-card mb-3">
+            <div class="poin-label">Total Poin Reward</div>
+            <div class="poin-display" id="profil-poin">0</div>
+            <div class="rank-badge" id="profil-rank" style="margin-top:0.5rem">🏅 Pelapor Baru</div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h5 style="font-weight:700;margin-bottom:1rem">Statistik Pelaporan</h5>
+              <div style="display:flex;flex-direction:column;gap:0.75rem" id="profil-stats">
+                <!-- Diisi JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal Detail Laporan -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3 id="modal-judul">Detail Laporan</h3>
+      <button class="modal-close" onclick="tutupModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-konten"></div>
+  </div>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('sijarak_token');
+const USER = JSON.parse(localStorage.getItem('sijarak_user') || 'null');
+let fotoFiles = [];
+
+// Guard: cek login
+if (!TOKEN || !USER) { window.location.href = 'login.html'; }
+document.getElementById('nav-nama').textContent = USER?.nama?.split(' ')[0] || 'User';
+
+function tampilkanSection(nama, el) {
+  document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+  document.getElementById(`section-${nama}`).style.display = 'block';
+  document.querySelectorAll('.sidebar-item a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (nama === 'laporan-saya') muatLaporanSaya();
+  if (nama === 'profil') muatProfil();
+  if (nama === 'riwayat') muatRiwayat();
+}
+
+function toast(pesan, tipe = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${tipe}`;
+  el.innerHTML = (tipe === 'success' ? '✅' : tipe === 'error' ? '❌' : 'ℹ️') + ' ' + pesan;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.style.animation = 'slideOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+function keluar() {
+  if (confirm('Yakin ingin keluar?')) {
+    localStorage.removeItem('sijarak_token');
+    localStorage.removeItem('sijarak_user');
+    window.location.href = 'login.html';
+  }
+}
+
+// Muat data beranda
+async function muatBeranda() {
+  try {
+    const res = await fetch('/api/laporan/saya', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+
+    if (data.berhasil) {
+      const laporans = data.data;
+      const pending = laporans.filter(l => l.status === 'pending').length;
+      const selesai = laporans.filter(l => l.status === 'selesai').length;
+
+      document.getElementById('s-total').textContent = laporans.length;
+      document.getElementById('s-pending').textContent = pending;
+      document.getElementById('s-selesai').textContent = selesai;
+    }
+
+    // Poin dari user data
+    const resUser = await fetch('/api/auth/profil', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const userData = await resUser.json();
+    if (userData.berhasil) {
+      const poin = userData.data.totalPoin;
+      document.getElementById('s-poin').textContent = poin;
+      document.getElementById('sidebar-poin-angka').textContent = poin;
+      document.getElementById('sidebar-poin-info').textContent = `${userData.data.totalLaporan} laporan dikirim`;
+    }
+
+    // Preview 3 laporan terbaru
+    const preview = document.getElementById('laporan-preview');
+    if (!data.data || data.data.length === 0) {
+      preview.innerHTML = '<div class="empty-state" style="padding:2rem"><div class="icon">📋</div><p>Belum ada laporan. Yuk, buat laporan pertamamu!</p><button class="btn btn-primary btn-sm" style="margin-top:0.75rem" onclick="tampilkanSection(\'buat-laporan\')">Buat Laporan</button></div>';
+    } else {
+      preview.innerHTML = `<div class="table-wrapper"><table>
+        <thead><tr><th>Judul</th><th>Status</th><th>Tingkat</th><th>Poin</th><th>Tanggal</th></tr></thead>
+        <tbody>${data.data.slice(0,3).map(l => `
+          <tr style="cursor:pointer" onclick="lihatDetailLaporan('${l._id}')">
+            <td style="font-weight:600">${l.judul}</td>
+            <td><span class="badge badge-${l.status}">${l.status}</span></td>
+            <td><span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span></td>
+            <td><strong>⭐ ${l.poinDiberikan}</strong></td>
+            <td class="text-muted">${new Date(l.createdAt).toLocaleDateString('id-ID')}</td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function muatLaporanSaya() {
+  try {
+    const res = await fetch('/api/laporan/saya', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    const el = document.getElementById('laporan-saya-list');
+
+    if (!data.data || data.data.length === 0) {
+      el.innerHTML = '<div class="empty-state" style="padding:3rem"><div class="icon">📋</div><p>Belum ada laporan. Buat laporan pertamamu!</p><button class="btn btn-primary btn-sm" style="margin-top:0.75rem" onclick="tampilkanSection(\'buat-laporan\')">Buat Laporan</button></div>';
+      return;
+    }
+
+    el.innerHTML = `<div class="table-wrapper"><table>
+      <thead><tr><th>Judul</th><th>Status</th><th>Tingkat</th><th>Poin</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+      <tbody>${data.data.map(l => `
+        <tr>
+          <td><span style="font-weight:600;cursor:pointer;color:var(--primary)" onclick="lihatDetailLaporan('${l._id}')">${l.judul}</span>
+          <div class="text-muted text-sm">📍 ${l.lokasi?.alamat}</div></td>
+          <td><span class="badge badge-${l.status}">${l.status}</span></td>
+          <td><span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span></td>
+          <td><strong>⭐ ${l.poinDiberikan}</strong></td>
+          <td class="text-muted text-sm">${new Date(l.createdAt).toLocaleDateString('id-ID')}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem">
+              <button class="btn btn-secondary btn-sm" onclick="lihatDetailLaporan('${l._id}')">👁</button>
+              ${l.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="hapusLaporan('${l._id}')">🗑</button>` : ''}
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch(e) { console.error(e); }
+}
+
+async function muatRiwayat() {
+  try {
+    const res = await fetch('/api/laporan/saya', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    const el = document.getElementById('riwayat-content');
+    if (!data.data || data.data.length === 0) {
+      el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Belum ada aktivitas.</p></div>';
+      return;
+    }
+    const items = [];
+    data.data.forEach(l => {
+      (l.riwayatStatus || []).forEach(r => {
+        items.push({ laporan: l.judul, status: r.status, catatan: r.catatan, tanggal: r.tanggal });
+      });
+    });
+    items.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+    el.innerHTML = '<div class="timeline">' + items.slice(0,20).map(r => `
+      <div class="timeline-item">
+        <div class="timeline-dot ${r.status}"></div>
+        <div class="timeline-content">
+          <strong>${r.laporan}</strong>
+          <div><span class="badge badge-${r.status}" style="margin-top:4px">${r.status}</span>${r.catatan ? ` — ${r.catatan}` : ''}</div>
+          <div class="timeline-date">${new Date(r.tanggal).toLocaleString('id-ID')}</div>
+        </div>
+      </div>`).join('') + '</div>';
+  } catch(e) { console.error(e); }
+}
+
+async function muatProfil() {
+  try {
+    const res = await fetch('/api/auth/profil', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const { data } = await res.json();
+    document.getElementById('profil-avatar').textContent = data.nama[0].toUpperCase();
+    document.getElementById('profil-nama').textContent = data.nama;
+    document.getElementById('profil-nama-input').value = data.nama;
+    document.getElementById('profil-email').value = data.email;
+    document.getElementById('profil-telp').value = data.nomorTelepon || '';
+    document.getElementById('profil-alamat').value = data.alamat || '';
+    document.getElementById('profil-poin').textContent = data.totalPoin;
+    const rank = data.totalPoin >= 500 ? '🏆 Master Pelapor' : data.totalPoin >= 200 ? '🥇 Pelapor Senior' : data.totalPoin >= 100 ? '🥈 Pelapor Aktif' : '🏅 Pelapor Baru';
+    document.getElementById('profil-rank').textContent = rank;
+    document.getElementById('profil-stats').innerHTML = `
+      <div style="display:flex;justify-content:space-between"><span class="text-muted">Total Laporan</span><strong>${data.totalLaporan}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span class="text-muted">Laporan Diterima</span><strong>${data.laporanDiterima}</strong></div>
+      <div style="display:flex;justify-content:space-between"><span class="text-muted">Total Poin</span><strong style="color:var(--primary)">⭐ ${data.totalPoin}</strong></div>`;
+  } catch(e) { console.error(e); }
+}
+
+async function updateProfil(e) {
+  e.preventDefault();
+  try {
+    const res = await fetch('/api/auth/profil', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+      body: JSON.stringify({
+        nama: document.getElementById('profil-nama-input').value,
+        nomorTelepon: document.getElementById('profil-telp').value,
+        alamat: document.getElementById('profil-alamat').value
+      })
+    });
+    const data = await res.json();
+    if (data.berhasil) {
+      toast('Profil berhasil diperbarui!');
+      localStorage.setItem('sijarak_user', JSON.stringify({ ...USER, nama: data.data.nama }));
+    } else toast(data.pesan, 'error');
+  } catch(e) { toast('Gagal memperbarui profil.', 'error'); }
+}
+
+// Upload foto
+let fotoList = [];
+function previewFoto(input) {
+  const files = Array.from(input.files);
+  if (fotoList.length + files.length > 5) { alert('Maksimal 5 foto!'); return; }
+  files.forEach(file => {
+    if (file.size > 5 * 1024 * 1024) { alert(`File ${file.name} melebihi 5MB!`); return; }
+    fotoList.push(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      div.id = `preview-${fotoList.length - 1}`;
+      div.innerHTML = `<img src="${e.target.result}" alt="Preview"><button type="button" class="preview-remove" onclick="hapusFoto(${fotoList.length - 1})">✕</button>`;
+      document.getElementById('foto-preview').appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function hapusFoto(idx) {
+  fotoList.splice(idx, 1);
+  document.getElementById('foto-preview').innerHTML = '';
+  fotoList.forEach((f, i) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      div.innerHTML = `<img src="${e.target.result}" alt="Preview"><button type="button" class="preview-remove" onclick="hapusFoto(${i})">✕</button>`;
+      document.getElementById('foto-preview').appendChild(div);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function dragOver(e) { e.preventDefault(); document.getElementById('upload-area').classList.add('dragover'); }
+function dragLeave(e) { document.getElementById('upload-area').classList.remove('dragover'); }
+function drop(e) {
+  e.preventDefault();
+  dragLeave(e);
+  const input = document.getElementById('foto-input');
+  const dt = new DataTransfer();
+  Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+  input.files = dt.files;
+  previewFoto(input);
+}
+
+function perbaruiPoin(tingkat) {
+  const poinMap = { ringan: 10, sedang: 20, berat: 35, sangat_berat: 50 };
+  const poin = poinMap[tingkat] || 0;
+  const el = document.getElementById('poin-preview');
+  if (poin > 0) {
+    el.style.display = 'flex';
+    document.getElementById('poin-label').textContent = `Anda akan mendapat ${poin} poin dari laporan ini`;
+  } else { el.style.display = 'none'; }
+}
+
+function resetForm() { fotoList = []; document.getElementById('foto-preview').innerHTML = ''; document.getElementById('poin-preview').style.display = 'none'; }
+
+async function kirimLaporan(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-kirim');
+  btn.disabled = true;
+  btn.textContent = 'Mengirim...';
+
+  const form = e.target;
+  const fd = new FormData();
+  ['judul', 'deskripsi', 'tingkatKerusakan', 'jenisKerusakan', 'alamat', 'kecamatan', 'kota', 'panjangKerusakan'].forEach(k => {
+    if (form[k] && form[k].value) fd.append(k, form[k].value);
+  });
+  fotoList.forEach(f => fd.append('foto', f));
+
+  try {
+    const res = await fetch('/api/laporan', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      body: fd
+    });
+    const data = await res.json();
+    const alertEl = document.getElementById('form-alert');
+
+    if (data.berhasil) {
+      alertEl.innerHTML = `<div class="alert alert-success">✅ ${data.pesan}</div>`;
+      form.reset();
+      resetForm();
+      setTimeout(() => { tampilkanSection('laporan-saya'); muatBeranda(); }, 1500);
+    } else {
+      const pesan = data.errors ? data.errors.map(e => e.msg).join(', ') : data.pesan;
+      alertEl.innerHTML = `<div class="alert alert-error">❌ ${pesan}</div>`;
+    }
+  } catch(err) {
+    document.getElementById('form-alert').innerHTML = `<div class="alert alert-error">❌ Gagal mengirim. Pastikan server berjalan.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Kirim Laporan';
+  }
+}
+
+async function lihatDetailLaporan(id) {
+  const modal = document.getElementById('modal-detail');
+  document.getElementById('modal-konten').innerHTML = '<div style="text-align:center;padding:2rem"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  modal.classList.add('aktif');
+
+  try {
+    const res = await fetch(`/api/laporan/${id}`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const { data: l } = await res.json();
+    const fotoHtml = (l.foto || []).map(f => `<img src="${f}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:250px;object-fit:cover">`).join('');
+
+    document.getElementById('modal-judul').textContent = l.judul;
+    document.getElementById('modal-konten').innerHTML = `
+      ${fotoHtml || '<div style="background:var(--gray-100);height:100px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:1rem">🚧</div>'}
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+        <span class="badge badge-${l.status}">${l.status}</span>
+        <span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span>
+      </div>
+      <p style="font-size:0.9rem;margin-bottom:1rem">${l.deskripsi}</p>
+      <div style="background:var(--gray-50);border-radius:8px;padding:0.875rem;margin-bottom:1rem;font-size:0.875rem">
+        <div><strong>📍 Lokasi:</strong> ${l.lokasi?.alamat}</div>
+        <div style="margin-top:0.4rem"><strong>⭐ Poin:</strong> ${l.poinDiberikan} poin</div>
+        ${l.catatanAdmin ? `<div style="margin-top:0.4rem;color:var(--accent)"><strong>💬 Catatan Admin:</strong> ${l.catatanAdmin}</div>` : ''}
+      </div>
+      <h5 style="font-weight:700;margin-bottom:0.75rem">Riwayat Status</h5>
+      <div class="timeline">
+        ${(l.riwayatStatus || []).map(r => `
+          <div class="timeline-item">
+            <div class="timeline-dot ${r.status}"></div>
+            <div class="timeline-content">
+              <strong>${r.status}</strong>${r.catatan ? ` — ${r.catatan}` : ''}
+              <div class="timeline-date">${new Date(r.tanggal).toLocaleString('id-ID')}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) {}
+}
+
+async function hapusLaporan(id) {
+  if (!confirm('Yakin hapus laporan ini? Poin akan dikurangi.')) return;
+  try {
+    const res = await fetch(`/api/laporan/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    if (data.berhasil) { toast('Laporan dihapus.'); muatLaporanSaya(); muatBeranda(); }
+    else toast(data.pesan, 'error');
+  } catch(e) { toast('Gagal menghapus.', 'error'); }
+}
+
+function tutupModal() { document.getElementById('modal-detail').classList.remove('aktif'); }
+document.getElementById('modal-detail').addEventListener('click', function(e) { if (e.target === this) tutupModal(); });
+
+// Init
+muatBeranda();
+</script>
+</body>
+</html>

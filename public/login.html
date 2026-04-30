@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIJARAK — Login & Daftar</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="auth-wrapper">
+      <!-- Sisi Kiri (Dekorasi) -->
+      <div class="auth-left">
+        <div style="position: relative; z-index: 1">
+          <div class="navbar-brand" style="margin-bottom: 3rem">
+            <div class="logo-icon">🚧</div>
+            <span>SIJARAK</span>
+          </div>
+          <h2
+            style="
+              font-size: 2rem;
+              font-weight: 800;
+              margin-bottom: 1rem;
+              line-height: 1.3;
+            "
+          >
+            Laporkan Jalan Rusak,<br />
+            <span style="color: var(--primary)">Dapat Poin Reward!</span>
+          </h2>
+          <p style="opacity: 0.8; margin-bottom: 2.5rem; line-height: 1.8">
+            SIJARAK membantu warga melaporkan kerusakan jalan dengan mudah dan
+            cepat. Setiap laporan yang valid mendapatkan poin reward yang bisa
+            Anda kumpulkan.
+          </p>
+
+          <!-- Fitur -->
+          <div style="display: flex; flex-direction: column; gap: 1rem">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: rgba(255, 255, 255, 0.08);
+                padding: 0.85rem 1.1rem;
+                border-radius: 10px;
+              "
+            >
+              <span style="font-size: 1.3rem">📸</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.875rem">
+                  Upload Foto Kerusakan
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.7">
+                  Bukti visual hingga 5 foto
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: rgba(255, 255, 255, 0.08);
+                padding: 0.85rem 1.1rem;
+                border-radius: 10px;
+              "
+            >
+              <span style="font-size: 1.3rem">⭐</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.875rem">
+                  Sistem Poin Reward
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.7">
+                  10–50 poin per laporan valid
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: rgba(255, 255, 255, 0.08);
+                padding: 0.85rem 1.1rem;
+                border-radius: 10px;
+              "
+            >
+              <span style="font-size: 1.3rem">🔔</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.875rem">
+                  Notifikasi Real-time
+                </div>
+                <div style="font-size: 0.78rem; opacity: 0.7">
+                  Update status laporan langsung
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sisi Kanan (Form) -->
+      <div class="auth-right">
+        <div class="auth-form-container">
+          <div style="margin-bottom: 2rem; text-align: center">
+            <div
+              class="navbar-brand"
+              style="justify-content: center; margin-bottom: 1rem"
+            >
+              <div class="logo-icon">🚧</div>
+              <span>SIJARAK</span>
+            </div>
+            <div class="tab-auth">
+              <button
+                class="active"
+                onclick="tampilkanTab('masuk')"
+                id="tab-masuk"
+              >
+                Masuk
+              </button>
+              <button onclick="tampilkanTab('daftar')" id="tab-daftar">
+                Daftar Akun
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert -->
+          <div id="alert-box" style="display: none"></div>
+
+          <!-- Form Masuk -->
+          <form id="form-masuk" onsubmit="handleMasuk(event)">
+            <div class="auth-title">Selamat Datang 👋</div>
+            <div class="auth-subtitle">Masuk ke akun SIJARAK Anda</div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >Email <span class="required">*</span></label
+              >
+              <input
+                type="email"
+                id="masuk-email"
+                class="form-control"
+                placeholder="email@contoh.com"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label"
+                >Password <span class="required">*</span></label
+              >
+              <div style="position: relative">
+                <input
+                  type="password"
+                  id="masuk-password"
+                  class="form-control"
+                  placeholder="Masukkan password"
+                  required
+                />
+                <button
+                  type="button"
+                  onclick="togglePassword('masuk-password', this)"
+                  style="
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--gray-400);
+                    font-size: 1rem;
+                  "
+                >
+                  👁
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem; text-align: right">
+              <a
+                href="#"
+                style="
+                  font-size: 0.85rem;
+                  color: var(--primary);
+                  text-decoration: none;
+                  font-weight: 500;
+                "
+                >-part of informatics-</a
+              >
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn-block btn-lg"
+              id="btn-masuk"
+            >
+              Masuk ke SIJARAK
+            </button>
+
+            <div class="divider">atau</div>
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-block"
+              onclick="masukSebagaiDemo()"
+            >
+              🎭 Coba Demo (Tanpa Daftar)
+            </button>
+          </form>
+
+          <!-- Form Daftar -->
+          <form
+            id="form-daftar"
+            style="display: none"
+            onsubmit="handleDaftar(event)"
+          >
+            <div class="auth-title">Buat Akun Baru 🚀</div>
+            <div class="auth-subtitle">
+              Bergabung dengan komunitas pelapor SIJARAK
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label"
+                  >Nama Lengkap <span class="required">*</span></label
+                >
+                <input
+                  type="text"
+                  id="daftar-nama"
+                  class="form-control"
+                  placeholder="Nama Anda"
+                  required
+                  minlength="3"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">No. Telepon</label>
+                <input
+                  type="tel"
+                  id="daftar-telp"
+                  class="form-control"
+                  placeholder="08xx"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >Email <span class="required">*</span></label
+              >
+              <input
+                type="email"
+                id="daftar-email"
+                class="form-control"
+                placeholder="email@contoh.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Alamat</label>
+              <input
+                type="text"
+                id="daftar-alamat"
+                class="form-control"
+                placeholder="Alamat domisili Anda"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >Password <span class="required">*</span></label
+              >
+              <div style="position: relative">
+                <input
+                  type="password"
+                  id="daftar-password"
+                  class="form-control"
+                  placeholder="Minimal 6 karakter"
+                  required
+                  minlength="6"
+                />
+                <button
+                  type="button"
+                  onclick="togglePassword('daftar-password', this)"
+                  style="
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--gray-400);
+                    font-size: 1rem;
+                  "
+                >
+                  👁
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"
+                >Konfirmasi Password <span class="required">*</span></label
+              >
+              <input
+                type="password"
+                id="daftar-konfirmasi"
+                class="form-control"
+                placeholder="Ulangi password"
+                required
+              />
+            </div>
+
+            <div style="margin-bottom: 1.25rem">
+              <label
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 0.5rem;
+                  cursor: pointer;
+                  font-size: 0.85rem;
+                  color: var(--gray-700);
+                "
+              >
+                <input type="checkbox" required style="margin-top: 3px" />
+                Saya setuju dengan
+                <a href="#" style="color: var(--primary)">Syarat & Ketentuan</a>
+                SIJARAK
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn-block btn-lg"
+              id="btn-daftar"
+            >
+              Buat Akun Sekarang
+            </button>
+          </form>
+
+          <p
+            style="
+              text-align: center;
+              margin-top: 1.5rem;
+              font-size: 0.85rem;
+              color: var(--gray-500);
+            "
+          >
+            <a
+              href="index.html"
+              style="color: var(--primary); text-decoration: none"
+              >← Kembali ke Beranda</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = "";
+
+      function tampilkanTab(tab) {
+        document.getElementById("form-masuk").style.display =
+          tab === "masuk" ? "block" : "none";
+        document.getElementById("form-daftar").style.display =
+          tab === "daftar" ? "block" : "none";
+        document
+          .getElementById("tab-masuk")
+          .classList.toggle("active", tab === "masuk");
+        document
+          .getElementById("tab-daftar")
+          .classList.toggle("active", tab === "daftar");
+        document.getElementById("alert-box").style.display = "none";
+      }
+
+      function togglePassword(id, btn) {
+        const input = document.getElementById(id);
+        if (input.type === "password") {
+          input.type = "text";
+          btn.textContent = "🙈";
+        } else {
+          input.type = "password";
+          btn.textContent = "👁";
+        }
+      }
+
+      function tampilkanAlert(pesan, tipe = "error") {
+        const box = document.getElementById("alert-box");
+        const ikon = tipe === "success" ? "✅" : tipe === "info" ? "ℹ️" : "❌";
+        box.innerHTML = `<div class="alert alert-${tipe}">${ikon} ${pesan}</div>`;
+        box.style.display = "block";
+      }
+
+      async function handleMasuk(e) {
+        e.preventDefault();
+        const btn = document.getElementById("btn-masuk");
+        btn.disabled = true;
+        btn.textContent = "Memproses...";
+
+        try {
+          const res = await fetch("/api/auth/masuk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: document.getElementById("masuk-email").value,
+              password: document.getElementById("masuk-password").value,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.berhasil) {
+            localStorage.setItem("sijarak_token", data.token);
+            localStorage.setItem("sijarak_user", JSON.stringify(data.user));
+            tampilkanAlert(data.pesan, "success");
+            setTimeout(() => {
+              window.location.href =
+                data.user.role === "admin" ? "admin.html" : "dashboard.html";
+            }, 800);
+          } else {
+            tampilkanAlert(
+              data.pesan || "Login gagal. Periksa email dan password Anda.",
+            );
+          }
+        } catch (err) {
+          tampilkanAlert(
+            "Tidak dapat terhubung ke server. Pastikan server berjalan.",
+          );
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Masuk ke SIJARAK";
+        }
+      }
+
+      async function handleDaftar(e) {
+        e.preventDefault();
+        const password = document.getElementById("daftar-password").value;
+        const konfirmasi = document.getElementById("daftar-konfirmasi").value;
+
+        if (password !== konfirmasi) {
+          return tampilkanAlert("Password dan konfirmasi tidak cocok!");
+        }
+
+        const btn = document.getElementById("btn-daftar");
+        btn.disabled = true;
+        btn.textContent = "Mendaftarkan...";
+
+        try {
+          const res = await fetch("/api/auth/daftar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nama: document.getElementById("daftar-nama").value,
+              email: document.getElementById("daftar-email").value,
+              password,
+              nomorTelepon: document.getElementById("daftar-telp").value,
+              alamat: document.getElementById("daftar-alamat").value,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.berhasil) {
+            localStorage.setItem("sijarak_token", data.token);
+            localStorage.setItem("sijarak_user", JSON.stringify(data.user));
+            tampilkanAlert(data.pesan, "success");
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 1000);
+          } else {
+            const pesan = data.errors
+              ? data.errors.map((e) => e.msg).join(", ")
+              : data.pesan;
+            tampilkanAlert(pesan);
+          }
+        } catch (err) {
+          tampilkanAlert("Tidak dapat terhubung ke server.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Buat Akun Sekarang";
+        }
+      }
+
+      function masukSebagaiDemo() {
+        document.getElementById("masuk-email").value = "demo@sijarak.id";
+        document.getElementById("masuk-password").value = "demo123";
+        tampilkanAlert("Menggunakan akun demo...", "info");
+      }
+
+      // Cek jika sudah login
+      const userAda = localStorage.getItem("sijarak_user");
+      if (userAda) {
+        const user = JSON.parse(userAda);
+        window.location.href =
+          user.role === "admin" ? "admin.html" : "dashboard.html";
+      }
+    </script>
+  </body>
+</html>

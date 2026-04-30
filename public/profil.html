@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Saya — SIJARAK</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* ===== Avatar Upload Section ===== */
+      .avatar-wrapper {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: 0 auto 1rem;
+      }
+      .avatar-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary);
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
+        background: var(--gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+      }
+      .avatar-img.inisial {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+      }
+      .avatar-edit-btn {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 34px;
+        height: 34px;
+        background: var(--primary);
+        border: 3px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s;
+      }
+      .avatar-edit-btn:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+      }
+
+      /* Upload modal overlay */
+      .upload-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+      }
+      .upload-modal.aktif {
+        opacity: 1;
+        visibility: visible;
+      }
+      .upload-modal-box {
+        background: white;
+        border-radius: var(--radius);
+        width: 100%;
+        max-width: 440px;
+        box-shadow: var(--shadow-lg);
+        transform: scale(0.95);
+        transition: transform 0.2s;
+        overflow: hidden;
+      }
+      .upload-modal.aktif .upload-modal-box {
+        transform: scale(1);
+      }
+
+      /* Preview crop area */
+      .preview-avatar-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem 0;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+      }
+      .preview-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary);
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25);
+      }
+      .preview-avatar.empty {
+        background: var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+      }
+
+      /* Drag drop zone */
+      .drop-zone {
+        border: 2px dashed var(--gray-300);
+        border-radius: var(--radius-sm);
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--gray-50);
+        margin: 1.25rem;
+      }
+      .drop-zone:hover,
+      .drop-zone.drag {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+      .drop-zone .dz-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      /* Poin card */
+      .poin-tier {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 1rem;
+      }
+      .tier-card {
+        text-align: center;
+        padding: 10px 6px;
+        border-radius: 10px;
+        border: 1.5px solid var(--gray-200);
+        transition: all 0.2s;
+      }
+      .tier-card.aktif {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+      .tier-icon {
+        font-size: 1.4rem;
+      }
+      .tier-name {
+        font-size: 0.65rem;
+        font-weight: 700;
+        margin-top: 3px;
+        color: var(--gray-700);
+      }
+      .tier-syarat {
+        font-size: 0.6rem;
+        color: var(--gray-500);
+        margin-top: 1px;
+      }
+
+      /* Statistik bar */
+      .stat-bar-wrap {
+        margin-bottom: 1rem;
+      }
+      .stat-bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+      }
+      .stat-bar-bg {
+        background: var(--gray-200);
+        border-radius: 20px;
+        height: 10px;
+        overflow: hidden;
+      }
+      .stat-bar-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        transition: width 0.8s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a class="navbar-brand" href="index.html"
+        ><div class="logo-icon">🚧</div>
+        SIJARAK</a
+      >
+      <div class="navbar-menu">
+        <a class="nav-link" href="dashboard.html">← Dashboard</a>
+        <button class="btn btn-secondary btn-sm" onclick="keluar()">
+          Keluar
+        </button>
+      </div>
+    </nav>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading">
+      <div style="text-align: center">
+        <div class="loading-spinner" style="margin: 0 auto 1rem"></div>
+        <p style="font-weight: 600; color: var(--gray-700)">
+          Mengupload foto...
+        </p>
+      </div>
+    </div>
+
+    <!-- Upload Avatar Modal -->
+    <div class="upload-modal" id="modal-avatar">
+      <div class="upload-modal-box">
+        <div
+          style="
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h3 style="font-size: 1rem; font-weight: 700">
+            📸 Ganti Foto Profil
+          </h3>
+          <button
+            onclick="tutupModalAvatar()"
+            style="
+              background: none;
+              border: none;
+              cursor: pointer;
+              font-size: 1.2rem;
+              color: var(--gray-500);
+              padding: 4px;
+              border-radius: 6px;
+            "
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-avatar-wrap">
+          <div id="preview-container">
+            <div class="preview-avatar empty" id="preview-empty">📷</div>
+            <img
+              id="preview-img"
+              class="preview-avatar"
+              style="display: none"
+              alt="Preview foto profil"
+            />
+          </div>
+        </div>
+
+        <!-- Drop Zone -->
+        <div
+          class="drop-zone"
+          id="drop-zone"
+          onclick="document.getElementById('avatar-input').click()"
+          ondragover="dzOver(event)"
+          ondragleave="dzLeave()"
+          ondrop="dzDrop(event)"
+        >
+          <div class="dz-icon">🖼️</div>
+          <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 4px">
+            Pilih foto atau drag &amp; drop
+          </p>
+          <p style="font-size: 0.78rem; color: var(--gray-500)">
+            JPG, PNG, WEBP · Maksimal 3MB
+          </p>
+        </div>
+        <input
+          type="file"
+          id="avatar-input"
+          accept="image/jpeg,image/png,image/webp"
+          style="display: none"
+          onchange="previewAvatar(this)"
+        />
+
+        <!-- Info -->
+        <div
+          style="
+            margin: 0 1.25rem 1.25rem;
+            background: var(--primary-light);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: var(--gray-700);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+          "
+        >
+          <span>💡</span>
+          <div>
+            Gunakan foto wajah yang jelas. Foto berbentuk kotak/persegi akan
+            terlihat paling baik karena dipotong menjadi lingkaran.
+          </div>
+        </div>
+
+        <div style="padding: 0 1.25rem 1.25rem; display: flex; gap: 0.75rem">
+          <button
+            class="btn btn-primary"
+            id="btn-upload-avatar"
+            onclick="uploadAvatar()"
+            disabled
+            style="flex: 1"
+          >
+            Upload Foto
+          </button>
+          <button
+            class="btn btn-danger btn-sm"
+            id="btn-hapus-avatar"
+            onclick="hapusAvatar()"
+            style="display: none"
+          >
+            Hapus
+          </button>
+          <button class="btn btn-secondary" onclick="tutupModalAvatar()">
+            Batal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div class="container" style="max-width: 900px; padding: 2rem 1.5rem">
+      <div class="grid-2" style="align-items: start; gap: 1.5rem">
+        <!-- Kartu Kiri: Info Profil -->
+        <div>
+          <div class="card mb-3">
+            <div class="card-body" style="text-align: center">
+              <!-- Avatar -->
+              <div class="avatar-wrapper">
+                <div id="avatar-display" class="avatar-img inisial">U</div>
+                <div
+                  class="avatar-edit-btn"
+                  onclick="bukaModalAvatar()"
+                  title="Ganti foto profil"
+                >
+                  ✏️
+                </div>
+              </div>
+              <h3 style="font-weight: 700; font-size: 1.25rem" id="profil-nama">
+                -
+              </h3>
+              <p
+                style="
+                  color: var(--gray-500);
+                  font-size: 0.875rem;
+                  margin-top: 2px;
+                "
+                id="profil-email"
+              >
+                -
+              </p>
+              <div style="margin-top: 0.75rem" id="profil-role-badge">
+                <span class="badge badge-selesai" id="profil-role-label"
+                  >User</span
+                >
+              </div>
+
+              <!-- Poin -->
+              <div
+                style="
+                  margin-top: 1.5rem;
+                  padding: 1rem;
+                  background: linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--primary-dark)
+                  );
+                  border-radius: 12px;
+                  color: white;
+                "
+              >
+                <div
+                  style="font-size: 0.8rem; opacity: 0.85; margin-bottom: 2px"
+                >
+                  Total Poin Reward
+                </div>
+                <div
+                  style="font-size: 2.25rem; font-weight: 800; line-height: 1"
+                  id="profil-poin"
+                >
+                  0
+                </div>
+                <div
+                  id="profil-rank"
+                  style="
+                    margin-top: 6px;
+                    background: rgba(255, 255, 255, 0.2);
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    font-size: 0.78rem;
+                    font-weight: 600;
+                  "
+                >
+                  🏅 Pelapor Baru
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier System -->
+          <div class="card">
+            <div class="card-header">
+              <h4 style="font-weight: 700; font-size: 0.9rem">
+                🏆 Sistem Tier Pelapor
+              </h4>
+            </div>
+            <div class="card-body">
+              <div class="poin-tier" id="tier-grid">
+                <div class="tier-card" id="tier-baru">
+                  <div class="tier-icon">🏅</div>
+                  <div class="tier-name">Baru</div>
+                  <div class="tier-syarat">0–99 poin</div>
+                </div>
+                <div class="tier-card" id="tier-aktif">
+                  <div class="tier-icon">🥈</div>
+                  <div class="tier-name">Aktif</div>
+                  <div class="tier-syarat">100–199 poin</div>
+                </div>
+                <div class="tier-card" id="tier-senior">
+                  <div class="tier-icon">🥇</div>
+                  <div class="tier-name">Senior</div>
+                  <div class="tier-syarat">200–499 poin</div>
+                </div>
+                <div class="tier-card" id="tier-master">
+                  <div class="tier-icon">🏆</div>
+                  <div class="tier-name">Master</div>
+                  <div class="tier-syarat">500+ poin</div>
+                </div>
+              </div>
+              <div id="progress-tier-wrap" style="margin-top: 1rem">
+                <div class="stat-bar-label">
+                  <span
+                    style="font-size: 0.78rem; color: var(--gray-600)"
+                    id="tier-progress-label"
+                    >Menuju tier berikutnya</span
+                  >
+                  <span
+                    style="
+                      font-size: 0.78rem;
+                      font-weight: 700;
+                      color: var(--primary);
+                    "
+                    id="tier-progress-pct"
+                    >0%</span
+                  >
+                </div>
+                <div class="stat-bar-bg">
+                  <div
+                    class="stat-bar-fill"
+                    id="tier-progress-bar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kartu Kanan: Form & Statistik -->
+        <div>
+          <!-- Form Edit Profil -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <h4 style="font-weight: 700">✏️ Edit Profil</h4>
+            </div>
+            <div class="card-body">
+              <div id="form-alert-profil"></div>
+              <form onsubmit="simpanProfil(event)">
+                <div class="form-group">
+                  <label class="form-label"
+                    >Nama Lengkap <span class="required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="input-nama"
+                    required
+                    minlength="3"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="input-email"
+                    disabled
+                    style="background: var(--gray-50); color: var(--gray-500)"
+                  />
+                  <div class="form-hint">Email tidak dapat diubah</div>
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">No. Telepon</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="input-telp"
+                      placeholder="08xx-xxxx-xxxx"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Kota/Domisili</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="input-kota"
+                      placeholder="Contoh: Surabaya"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Alamat Lengkap</label>
+                  <textarea
+                    class="form-control"
+                    id="input-alamat"
+                    rows="2"
+                    placeholder="Jl. Contoh No. 1, RT 01/RW 02..."
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="btn-simpan-profil"
+                >
+                  💾 Simpan Perubahan
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Statistik Pelaporan -->
+          <div class="card">
+            <div class="card-header">
+              <h4 style="font-weight: 700">📊 Statistik Pelaporan</h4>
+            </div>
+            <div class="card-body" id="statistik-body">
+              <div class="empty-state">
+                <div class="loading-spinner" style="margin: 0 auto 1rem"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const TOKEN = localStorage.getItem("sijarak_token");
+      const USER = JSON.parse(localStorage.getItem("sijarak_user") || "null");
+
+      if (!TOKEN || !USER) {
+        window.location.href = "login.html";
+      }
+
+      let fotoBaruFile = null;
+      let dataUser = null;
+
+      // ===== TOAST =====
+      function toast(pesan, tipe = "success") {
+        const el = document.createElement("div");
+        el.className = `toast toast-${tipe}`;
+        el.innerHTML =
+          (tipe === "success" ? "✅" : tipe === "error" ? "❌" : "ℹ️") +
+          " " +
+          pesan;
+        document.getElementById("toast-container").appendChild(el);
+        setTimeout(() => {
+          el.style.animation = "slideOut .3s ease forwards";
+          setTimeout(() => el.remove(), 300);
+        }, 3500);
+      }
+
+      function keluar() {
+        if (!confirm("Yakin ingin keluar?")) return;
+        localStorage.removeItem("sijarak_token");
+        localStorage.removeItem("sijarak_user");
+        window.location.href = "login.html";
+      }
+
+      // ===== TAMPILKAN AVATAR =====
+      function tampilkanAvatar(user) {
+        const el = document.getElementById("avatar-display");
+        if (user.avatar) {
+          el.innerHTML = `<img src="${user.avatar}" alt="${user.nama}" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:4px solid var(--primary);box-shadow:0 4px 14px rgba(249,115,22,.25)">`;
+          el.classList.remove("inisial");
+          document.getElementById("btn-hapus-avatar").style.display =
+            "inline-flex";
+        } else {
+          el.innerHTML = user.nama ? user.nama[0].toUpperCase() : "U";
+          el.className = "avatar-img inisial";
+          document.getElementById("btn-hapus-avatar").style.display = "none";
+        }
+      }
+
+      // ===== MUAT PROFIL =====
+      async function muatProfil() {
+        try {
+          const res = await fetch("/api/auth/profil", {
+            headers: { Authorization: `Bearer ${TOKEN}` },
+          });
+          const json = await res.json();
+          if (!json.berhasil) return;
+          dataUser = json.data;
+
+          // Isi UI
+          document.getElementById("profil-nama").textContent = dataUser.nama;
+          document.getElementById("profil-email").textContent = dataUser.email;
+          document.getElementById("profil-poin").textContent =
+            dataUser.totalPoin;
+          document.getElementById("input-nama").value = dataUser.nama;
+          document.getElementById("input-email").value = dataUser.email;
+          document.getElementById("input-telp").value =
+            dataUser.nomorTelepon || "";
+          document.getElementById("input-alamat").value = dataUser.alamat || "";
+          // Simpan kota dari alamat jika ada
+          document.getElementById("input-kota").value = dataUser.kota || "";
+
+          tampilkanAvatar(dataUser);
+          tampilkanTier(dataUser.totalPoin);
+          muatStatistik();
+
+          // Update badge role sesuai data dari server
+          const roleEl = document.getElementById("profil-role-label");
+          if (roleEl) {
+            const role = dataUser.role || "user";
+            if (role === "admin") {
+              roleEl.textContent = "Admin";
+              roleEl.className = "badge badge-ditolak"; // warna merah/oranye khas admin
+            } else if (role === "superadmin") {
+              roleEl.textContent = "Super Admin";
+              roleEl.className = "badge badge-ditolak";
+            } else {
+              roleEl.textContent = "User";
+              roleEl.className = "badge badge-selesai";
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // ===== TIER SYSTEM =====
+      function tampilkanTier(poin) {
+        const tiers = [
+          {
+            id: "tier-baru",
+            min: 0,
+            max: 99,
+            label: "🏅 Pelapor Baru",
+            next: 100,
+          },
+          {
+            id: "tier-aktif",
+            min: 100,
+            max: 199,
+            label: "🥈 Pelapor Aktif",
+            next: 200,
+          },
+          {
+            id: "tier-senior",
+            min: 200,
+            max: 499,
+            label: "🥇 Pelapor Senior",
+            next: 500,
+          },
+          {
+            id: "tier-master",
+            min: 500,
+            max: 99999,
+            label: "🏆 Master Pelapor",
+            next: null,
+          },
+        ];
+
+        const currentTier =
+          tiers.find((t) => poin >= t.min && poin <= t.max) || tiers[0];
+        document.getElementById("profil-rank").textContent = currentTier.label;
+
+        tiers.forEach((t) => {
+          const el = document.getElementById(t.id);
+          el.classList.toggle("aktif", t.id === currentTier.id);
+        });
+
+        // Progress bar ke tier berikutnya
+        const barEl = document.getElementById("tier-progress-bar");
+        const pctEl = document.getElementById("tier-progress-pct");
+        const lblEl = document.getElementById("tier-progress-label");
+        if (currentTier.next) {
+          const range = currentTier.next - currentTier.min;
+          const done = poin - currentTier.min;
+          const pct = Math.min(100, Math.round((done / range) * 100));
+          barEl.style.width = pct + "%";
+          pctEl.textContent = pct + "%";
+          lblEl.textContent = `${currentTier.next - poin} poin lagi ke tier berikutnya`;
+        } else {
+          barEl.style.width = "100%";
+          pctEl.textContent = "100%";
+          lblEl.textContent = "Tier tertinggi! Luar biasa 🏆";
+        }
+      }
+
+      // ===== STATISTIK =====
+      async function muatStatistik() {
+        try {
+          const res = await fetch("/api/laporan/saya", {
+            headers: { Authorization: `Bearer ${TOKEN}` },
+          });
+          const json = await res.json();
+          const el = document.getElementById("statistik-body");
+          if (!json.berhasil || !json.data) {
+            el.innerHTML =
+              '<p class="text-muted text-sm">Gagal memuat statistik.</p>';
+            return;
+          }
+
+          const laps = json.data;
+          const total = laps.length;
+          const selesai = laps.filter((l) => l.status === "selesai").length;
+          const pending = laps.filter((l) => l.status === "pending").length;
+          const diproses = laps.filter((l) => l.status === "diproses").length;
+          const ditolak = laps.filter((l) => l.status === "ditolak").length;
+          const totalPoin = laps.reduce(
+            (s, l) => s + (l.poinDiberikan || 0),
+            0,
+          );
+
+          el.innerHTML = `
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-label"><span>✅ Selesai</span><strong>${selesai} / ${total}</strong></div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${total ? Math.round((selesai / total) * 100) : 0}%;background:var(--success)"></div></div>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-label"><span>🔧 Diproses</span><strong>${diproses} / ${total}</strong></div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${total ? Math.round((diproses / total) * 100) : 0}%;background:var(--accent)"></div></div>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-label"><span>⏳ Pending</span><strong>${pending} / ${total}</strong></div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${total ? Math.round((pending / total) * 100) : 0}%;background:var(--warning)"></div></div>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-label"><span>❌ Ditolak</span><strong>${ditolak} / ${total}</strong></div>
+        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${total ? Math.round((ditolak / total) * 100) : 0}%;background:var(--danger)"></div></div>
+      </div>
+      <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;text-align:center">
+        <div style="background:var(--primary-light);border-radius:10px;padding:0.875rem">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">${total}</div>
+          <div style="font-size:0.78rem;color:var(--gray-600)">Total Laporan</div>
+        </div>
+        <div style="background:#fef3c7;border-radius:10px;padding:0.875rem">
+          <div style="font-size:1.5rem;font-weight:800;color:#92400e">⭐ ${totalPoin}</div>
+          <div style="font-size:0.78rem;color:var(--gray-600)">Total Poin</div>
+        </div>
+      </div>`;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // ===== MODAL AVATAR =====
+      function bukaModalAvatar() {
+        fotoBaruFile = null;
+        document.getElementById("preview-img").style.display = "none";
+        document.getElementById("preview-empty").style.display = "flex";
+        document.getElementById("btn-upload-avatar").disabled = true;
+        document.getElementById("avatar-input").value = "";
+        // Tampilkan tombol hapus jika user punya avatar
+        if (dataUser && dataUser.avatar) {
+          document.getElementById("btn-hapus-avatar").style.display =
+            "inline-flex";
+        }
+        document.getElementById("modal-avatar").classList.add("aktif");
+      }
+
+      function tutupModalAvatar() {
+        document.getElementById("modal-avatar").classList.remove("aktif");
+      }
+
+      function previewAvatar(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > 3 * 1024 * 1024) {
+          toast("Ukuran file maksimal 3MB!", "error");
+          input.value = "";
+          return;
+        }
+        fotoBaruFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.getElementById("preview-img");
+          img.src = e.target.result;
+          img.style.display = "block";
+          document.getElementById("preview-empty").style.display = "none";
+          document.getElementById("btn-upload-avatar").disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Drag & drop
+      function dzOver(e) {
+        e.preventDefault();
+        document.getElementById("drop-zone").classList.add("drag");
+      }
+      function dzLeave() {
+        document.getElementById("drop-zone").classList.remove("drag");
+      }
+      function dzDrop(e) {
+        e.preventDefault();
+        dzLeave();
+        const input = document.getElementById("avatar-input");
+        const dt = new DataTransfer();
+        dt.items.add(e.dataTransfer.files[0]);
+        input.files = dt.files;
+        previewAvatar(input);
+      }
+
+      // ===== UPLOAD AVATAR =====
+      async function uploadAvatar() {
+        if (!fotoBaruFile) return;
+        const loading = document.getElementById("loading");
+        loading.style.display = "flex";
+
+        try {
+          const fd = new FormData();
+          fd.append("avatar", fotoBaruFile);
+
+          const res = await fetch("/api/avatar", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${TOKEN}` },
+            body: fd,
+          });
+          const json = await res.json();
+
+          if (json.berhasil) {
+            // Update tampilan langsung
+            dataUser.avatar = json.avatar;
+            tampilkanAvatar(dataUser);
+            tutupModalAvatar();
+            toast("Foto profil berhasil diperbarui! 🎉");
+
+            // Update localStorage
+            const userLocal = JSON.parse(
+              localStorage.getItem("sijarak_user") || "{}",
+            );
+            userLocal.avatar = json.avatar;
+            localStorage.setItem("sijarak_user", JSON.stringify(userLocal));
+          } else {
+            toast(json.pesan || "Gagal upload foto.", "error");
+          }
+        } catch (e) {
+          toast("Tidak bisa terhubung ke server.", "error");
+        } finally {
+          loading.style.display = "none";
+        }
+      }
+
+      // ===== HAPUS AVATAR =====
+      async function hapusAvatar() {
+        if (!confirm("Yakin hapus foto profil?")) return;
+        document.getElementById("loading").style.display = "flex";
+        try {
+          const res = await fetch("/api/avatar", {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${TOKEN}` },
+          });
+          const json = await res.json();
+          if (json.berhasil) {
+            dataUser.avatar = "";
+            tampilkanAvatar(dataUser);
+            tutupModalAvatar();
+            toast("Foto profil dihapus.");
+          } else {
+            toast(json.pesan, "error");
+          }
+        } catch (e) {
+          toast("Gagal menghapus foto.", "error");
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
+
+      // ===== SIMPAN PROFIL =====
+      async function simpanProfil(e) {
+        e.preventDefault();
+        const btn = document.getElementById("btn-simpan-profil");
+        btn.disabled = true;
+        btn.textContent = "Menyimpan...";
+
+        try {
+          const res = await fetch("/api/auth/profil", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${TOKEN}`,
+            },
+            body: JSON.stringify({
+              nama: document.getElementById("input-nama").value,
+              nomorTelepon: document.getElementById("input-telp").value,
+              alamat: document.getElementById("input-alamat").value,
+            }),
+          });
+          const json = await res.json();
+          if (json.berhasil) {
+            document.getElementById("profil-nama").textContent = json.data.nama;
+            toast("Profil berhasil disimpan! ✅");
+            const userLocal = JSON.parse(
+              localStorage.getItem("sijarak_user") || "{}",
+            );
+            userLocal.nama = json.data.nama;
+            localStorage.setItem("sijarak_user", JSON.stringify(userLocal));
+          } else {
+            document.getElementById("form-alert-profil").innerHTML =
+              `<div class="alert alert-error">❌ ${json.pesan}</div>`;
+          }
+        } catch (e) {
+          toast("Gagal menyimpan profil.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "💾 Simpan Perubahan";
+        }
+      }
+
+      // Close modal on overlay click
+      document
+        .getElementById("modal-avatar")
+        .addEventListener("click", function (e) {
+          if (e.target === this) tutupModalAvatar();
+        });
+
+      // Init
+      muatProfil();
+    </script>
+  </body>
+</html>

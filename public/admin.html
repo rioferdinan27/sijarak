@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — SIJARAK</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html"><div class="logo-icon">🚧</div>SIJARAK <span style="background:var(--danger);color:white;font-size:0.65rem;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:700">ADMIN</span></a>
+  <div class="navbar-menu">
+    <span style="font-size:0.875rem;color:var(--gray-500)">Admin: <strong id="nav-nama">-</strong></span>
+    <button class="btn btn-secondary btn-sm" onclick="keluar()">Keluar</button>
+  </div>
+</nav>
+
+<div class="toast-container" id="toast-container"></div>
+
+<div class="layout-with-sidebar">
+  <aside class="sidebar">
+    <ul class="sidebar-menu">
+      <li class="sidebar-item"><a href="#" class="active" onclick="tampilkanSection('dashboard',this)"><span class="icon">📊</span> Dashboard</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('laporan',this)"><span class="icon">📋</span> Kelola Laporan</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('users',this)"><span class="icon">👥</span> Kelola User</a></li>
+      <li class="sidebar-item"><a href="#" onclick="tampilkanSection('buat-admin',this)"><span class="icon">🔑</span> Buat Admin</a></li>
+      <li class="sidebar-item"><a href="rekap.html"><span class="icon">📄</span> Rekap PDF</a></li>
+      <li class="sidebar-item" style="margin-top:1rem;border-top:1px solid var(--gray-200);padding-top:1rem">
+        <a href="index.html"><span class="icon">🌐</span> Lihat Publik</a>
+      </li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- Dashboard Stats -->
+    <div id="section-dashboard">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">📊 Dashboard Admin</h2>
+      <div class="grid-4" style="margin-bottom:1.5rem">
+        <div class="stat-card"><div class="stat-icon" style="background:#fff7ed">📋</div><div><div class="stat-number" id="d-total">0</div><div class="stat-label">Total Laporan</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fef3c7">⏳</div><div><div class="stat-number" id="d-pending">0</div><div class="stat-label">Menunggu</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">🔧</div><div><div class="stat-number" id="d-diproses">0</div><div class="stat-label">Diproses</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">✅</div><div><div class="stat-number" id="d-selesai">0</div><div class="stat-label">Selesai</div></div></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:1.5rem">
+        <div class="stat-card"><div class="stat-icon" style="background:#f3e8ff">👥</div><div><div class="stat-number" id="d-users">0</div><div class="stat-label">Total User</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">🚫</div><div><div class="stat-number" id="d-ditolak">0</div><div class="stat-label">Ditolak</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h4 style="font-weight:700">Laporan Terbaru Masuk</h4></div>
+        <div id="laporan-terbaru-list">
+          <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kelola Laporan -->
+    <div id="section-laporan" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h2 style="font-size:1.5rem;font-weight:800">📋 Kelola Laporan</h2>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <select class="form-control" id="a-filter-status" onchange="muatLaporanAdmin()" style="width:auto">
+            <option value="">Semua Status</option>
+            <option value="pending">Pending</option>
+            <option value="diproses">Diproses</option>
+            <option value="selesai">Selesai</option>
+            <option value="ditolak">Ditolak</option>
+          </select>
+          <input type="text" class="form-control" id="a-cari" placeholder="🔍 Cari laporan..." style="width:200px" oninput="muatLaporanAdmin()">
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrapper" id="tabel-laporan">
+          <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kelola User -->
+    <div id="section-users" style="display:none">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">👥 Kelola Pengguna</h2>
+      <div class="card">
+        <div class="table-wrapper" id="tabel-users">
+          <div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buat Admin -->
+    <div id="section-buat-admin" style="display:none">
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">🔑 Buat Akun Admin Baru</h2>
+      <div class="card" style="max-width:500px">
+        <div class="card-body">
+          <div id="admin-alert"></div>
+          <div class="alert alert-warning">⚠️ Akun admin memiliki akses penuh ke sistem. Buat dengan hati-hati.</div>
+          <form onsubmit="buatAdmin(event)">
+            <div class="form-group">
+              <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+              <input type="text" class="form-control" id="a-nama" required minlength="3">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input type="email" class="form-control" id="a-email" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password <span class="required">*</span></label>
+              <input type="password" class="form-control" id="a-password" required minlength="6" placeholder="Minimal 6 karakter">
+            </div>
+            <button type="submit" class="btn btn-primary">Buat Akun Admin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal Update Status -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3>Update Status Laporan</h3>
+      <button class="modal-close" onclick="tutupModalStatus()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="status-laporan-id">
+      <div class="form-group">
+        <label class="form-label">Judul Laporan</label>
+        <div id="status-judul" style="font-weight:600;color:var(--gray-700);padding:0.5rem 0"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status Baru <span class="required">*</span></label>
+        <select class="form-control" id="status-baru">
+          <option value="pending">⏳ Pending</option>
+          <option value="diproses">🔧 Diproses</option>
+          <option value="selesai">✅ Selesai</option>
+          <option value="ditolak">❌ Ditolak</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prioritas</label>
+        <select class="form-control" id="status-prioritas">
+          <option value="normal">Normal</option>
+          <option value="rendah">Rendah</option>
+          <option value="tinggi">Tinggi</option>
+          <option value="darurat">🚨 Darurat</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan Admin</label>
+        <textarea class="form-control" id="status-catatan" rows="3" placeholder="Catatan untuk pelapor..."></textarea>
+      </div>
+      <div style="background:var(--primary-light);border-radius:8px;padding:0.875rem;font-size:0.875rem;color:var(--gray-700)">
+        💡 <strong>Info Poin:</strong> Status "Selesai" → +15 poin bonus. Status "Ditolak" → poin dikurangi.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="tutupModalStatus()">Batal</button>
+      <button class="btn btn-primary" onclick="simpanStatus()">Simpan Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail Laporan Admin -->
+<div class="modal-overlay" id="modal-detail-admin">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3 id="modal-admin-judul">Detail Laporan</h3>
+      <button class="modal-close" onclick="document.getElementById('modal-detail-admin').classList.remove('aktif')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-admin-konten"></div>
+  </div>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('sijarak_token');
+const USER = JSON.parse(localStorage.getItem('sijarak_user') || 'null');
+
+if (!TOKEN || !USER || USER.role !== 'admin') {
+  alert('Akses ditolak! Anda bukan admin.');
+  window.location.href = 'login.html';
+}
+
+document.getElementById('nav-nama').textContent = USER?.nama || 'Admin';
+
+function toast(pesan, tipe = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${tipe}`;
+  el.innerHTML = (tipe === 'success' ? '✅' : tipe === 'error' ? '❌' : 'ℹ️') + ' ' + pesan;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.style.animation = 'slideOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+function keluar() {
+  localStorage.removeItem('sijarak_token');
+  localStorage.removeItem('sijarak_user');
+  window.location.href = 'login.html';
+}
+
+function tampilkanSection(nama, el) {
+  document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+  document.getElementById(`section-${nama}`).style.display = 'block';
+  document.querySelectorAll('.sidebar-item a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (nama === 'laporan') muatLaporanAdmin();
+  if (nama === 'users') muatUsers();
+}
+
+async function muatDashboard() {
+  try {
+    const res = await fetch('/api/admin/dashboard', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const { data } = await res.json();
+
+    document.getElementById('d-total').textContent = data.totalLaporan;
+    document.getElementById('d-pending').textContent = data.pending;
+    document.getElementById('d-diproses').textContent = data.diproses;
+    document.getElementById('d-selesai').textContent = data.selesai;
+    document.getElementById('d-users').textContent = data.totalUser;
+    document.getElementById('d-ditolak').textContent = data.ditolak;
+
+    // Laporan terbaru
+    const el = document.getElementById('laporan-terbaru-list');
+    if (!data.laporanTerbaru || data.laporanTerbaru.length === 0) {
+      el.innerHTML = '<div class="empty-state" style="padding:2rem"><div class="icon">📭</div><p>Belum ada laporan.</p></div>';
+      return;
+    }
+    el.innerHTML = `<div class="table-wrapper"><table>
+      <thead><tr><th>Judul</th><th>Pelapor</th><th>Status</th><th>Tingkat</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+      <tbody>${data.laporanTerbaru.map(l => `
+        <tr>
+          <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.judul}</td>
+          <td>${l.pelapor?.nama || '-'}</td>
+          <td><span class="badge badge-${l.status}">${l.status}</span></td>
+          <td><span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span></td>
+          <td class="text-muted text-sm">${new Date(l.createdAt).toLocaleDateString('id-ID')}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem">
+              <button class="btn btn-secondary btn-sm" onclick="lihatDetailAdmin('${l._id}')">👁</button>
+              <button class="btn btn-primary btn-sm" onclick="bukaModalStatus('${l._id}','${l.judul.replace(/'/g,"\\'")}','${l.status}')">✏️</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch(e) { console.error(e); }
+}
+
+let debounceTimer;
+async function muatLaporanAdmin() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    const status = document.getElementById('a-filter-status').value;
+    const cari = document.getElementById('a-cari').value;
+    let url = '/api/admin/laporan?limit=50';
+    if (status) url += `&status=${status}`;
+    if (cari) url += `&cari=${encodeURIComponent(cari)}`;
+
+    document.getElementById('tabel-laporan').innerHTML = '<div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>';
+
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+      const data = await res.json();
+      if (!data.data || data.data.length === 0) {
+        document.getElementById('tabel-laporan').innerHTML = '<div class="empty-state" style="padding:2rem"><div class="icon">📭</div><p>Tidak ada laporan.</p></div>';
+        return;
+      }
+      document.getElementById('tabel-laporan').innerHTML = `<table>
+        <thead><tr><th>Judul</th><th>Pelapor</th><th>Status</th><th>Tingkat</th><th>Poin</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+        <tbody>${data.data.map(l => `
+          <tr>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${l.judul}</td>
+            <td class="text-sm">${l.pelapor?.nama || '-'}<br><span class="text-muted">${l.pelapor?.email || ''}</span></td>
+            <td><span class="badge badge-${l.status}">${l.status}</span></td>
+            <td><span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span></td>
+            <td>⭐ ${l.poinDiberikan}</td>
+            <td class="text-sm text-muted">${new Date(l.createdAt).toLocaleDateString('id-ID')}</td>
+            <td>
+              <div style="display:flex;gap:0.4rem;flex-wrap:nowrap">
+                <button class="btn btn-secondary btn-sm" onclick="lihatDetailAdmin('${l._id}')">👁</button>
+                <button class="btn btn-primary btn-sm" onclick="bukaModalStatus('${l._id}','${l.judul.replace(/'/g,"\\'")}','${l.status}')">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="hapusLaporanAdmin('${l._id}')">🗑</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    } catch(e) { console.error(e); }
+  }, 400);
+}
+
+async function muatUsers() {
+  document.getElementById('tabel-users').innerHTML = '<div class="empty-state"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>';
+  try {
+    const res = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    if (!data.data || data.data.length === 0) {
+      document.getElementById('tabel-users').innerHTML = '<div class="empty-state" style="padding:2rem"><div class="icon">👥</div><p>Belum ada user.</p></div>';
+      return;
+    }
+    document.getElementById('tabel-users').innerHTML = `<table>
+      <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Laporan</th><th>Poin</th><th>Status</th><th>Bergabung</th><th>Aksi</th></tr></thead>
+      <tbody>${data.data.map((u, i) => `
+        <tr>
+          <td class="text-muted text-sm">${i+1}</td>
+          <td style="font-weight:600"><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.8rem;flex-shrink:0">${u.nama[0]}</div>${u.nama}</div></td>
+          <td class="text-sm text-muted">${u.email}</td>
+          <td>${u.totalLaporan} / ${u.laporanDiterima} diterima</td>
+          <td>⭐ <strong>${u.totalPoin}</strong></td>
+          <td>${u.aktif ? '<span class="badge badge-selesai">Aktif</span>' : '<span class="badge badge-ditolak">Nonaktif</span>'}</td>
+          <td class="text-sm text-muted">${new Date(u.createdAt).toLocaleDateString('id-ID')}</td>
+          <td><button class="btn btn-sm ${u.aktif ? 'btn-danger' : 'btn-success'}" onclick="toggleUser('${u._id}',${!u.aktif})">${u.aktif ? 'Nonaktifkan' : 'Aktifkan'}</button></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) { console.error(e); }
+}
+
+function bukaModalStatus(id, judul, statusSaat) {
+  document.getElementById('status-laporan-id').value = id;
+  document.getElementById('status-judul').textContent = judul;
+  document.getElementById('status-baru').value = statusSaat;
+  document.getElementById('status-catatan').value = '';
+  document.getElementById('modal-status').classList.add('aktif');
+}
+
+function tutupModalStatus() { document.getElementById('modal-status').classList.remove('aktif'); }
+
+async function simpanStatus() {
+  const id = document.getElementById('status-laporan-id').value;
+  const status = document.getElementById('status-baru').value;
+  const catatan = document.getElementById('status-catatan').value;
+  const prioritas = document.getElementById('status-prioritas').value;
+
+  try {
+    const res = await fetch(`/api/admin/laporan/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+      body: JSON.stringify({ status, catatan, prioritas })
+    });
+    const data = await res.json();
+    if (data.berhasil) {
+      toast(data.pesan);
+      tutupModalStatus();
+      muatDashboard();
+      if (document.getElementById('section-laporan').style.display !== 'none') muatLaporanAdmin();
+    } else toast(data.pesan, 'error');
+  } catch(e) { toast('Gagal mengubah status.', 'error'); }
+}
+
+async function hapusLaporanAdmin(id) {
+  if (!confirm('Yakin hapus laporan ini?')) return;
+  try {
+    const res = await fetch(`/api/admin/laporan/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    if (data.berhasil) { toast('Laporan dihapus.'); muatLaporanAdmin(); muatDashboard(); }
+    else toast(data.pesan, 'error');
+  } catch(e) { toast('Gagal menghapus.', 'error'); }
+}
+
+async function toggleUser(id, aktif) {
+  try {
+    const res = await fetch(`/api/admin/users/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+      body: JSON.stringify({ aktif })
+    });
+    const data = await res.json();
+    if (data.berhasil) { toast(data.pesan); muatUsers(); }
+    else toast(data.pesan, 'error');
+  } catch(e) { toast('Gagal.', 'error'); }
+}
+
+async function buatAdmin(e) {
+  e.preventDefault();
+  try {
+    const res = await fetch('/api/admin/buat-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+      body: JSON.stringify({ nama: document.getElementById('a-nama').value, email: document.getElementById('a-email').value, password: document.getElementById('a-password').value })
+    });
+    const data = await res.json();
+    const el = document.getElementById('admin-alert');
+    if (data.berhasil) {
+      el.innerHTML = `<div class="alert alert-success">✅ ${data.pesan}</div>`;
+      e.target.reset();
+    } else el.innerHTML = `<div class="alert alert-error">❌ ${data.pesan}</div>`;
+  } catch(e) { document.getElementById('admin-alert').innerHTML = '<div class="alert alert-error">❌ Gagal terhubung ke server.</div>'; }
+}
+
+async function lihatDetailAdmin(id) {
+  const modal = document.getElementById('modal-detail-admin');
+  document.getElementById('modal-admin-konten').innerHTML = '<div style="text-align:center;padding:2rem"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  modal.classList.add('aktif');
+  try {
+    const res = await fetch(`/api/laporan/${id}`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const { data: l } = await res.json();
+    const fotoHtml = (l.foto || []).map(f => `<img src="${f}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:250px;object-fit:cover">`).join('');
+    document.getElementById('modal-admin-judul').textContent = l.judul;
+    document.getElementById('modal-admin-konten').innerHTML = `
+      ${fotoHtml || '<div style="background:var(--gray-100);height:80px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:1rem">🚧</div>'}
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">
+        <span class="badge badge-${l.status}">${l.status}</span>
+        <span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span>
+        <span class="badge" style="background:var(--gray-100);color:var(--gray-700)">${l.jenisKerusakan}</span>
+      </div>
+      <p style="font-size:0.875rem;margin-bottom:1rem">${l.deskripsi}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.875rem;margin-bottom:1rem">
+        <div><span class="text-muted">📍 Lokasi:</span><br><strong>${l.lokasi?.alamat}</strong></div>
+        <div><span class="text-muted">👤 Pelapor:</span><br><strong>${l.pelapor?.nama} (${l.pelapor?.email})</strong></div>
+        <div><span class="text-muted">📅 Tanggal:</span><br><strong>${new Date(l.createdAt).toLocaleDateString('id-ID', { dateStyle:'long' })}</strong></div>
+        <div><span class="text-muted">⭐ Poin Diberikan:</span><br><strong>${l.poinDiberikan}</strong></div>
+      </div>
+      <div style="margin-top:0.5rem">
+        <button class="btn btn-primary btn-sm" onclick="bukaModalStatus('${l._id}','${l.judul.replace(/'/g,"\\'")}','${l.status}');document.getElementById('modal-detail-admin').classList.remove('aktif')">✏️ Update Status</button>
+      </div>`;
+  } catch(e) {}
+}
+
+document.getElementById('modal-status').addEventListener('click', function(e) { if (e.target === this) tutupModalStatus(); });
+document.getElementById('modal-detail-admin').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('aktif'); });
+
+// Init
+muatDashboard();
+</script>
+</body>
+</html>
