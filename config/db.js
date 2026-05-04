@@ -2,38 +2,39 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI;
+    // Railway biasanya memberikan MONGO_URL secara default, 
+    // tapi kita buat fallback agar tetap fleksibel.
+    const uri = process.env.MONGO_URI || process.env.MONGO_URL;
 
-    // 🔍 DEBUG ENV
-    console.log("🔎 Checking MONGO_URI...");
+    console.log("🔎 Checking Database Connection...");
+    
     if (!uri) {
-      throw new Error("MONGO_URI tidak ditemukan di environment!");
+      console.error("❌ Error: MONGO_URI atau MONGO_URL tidak ditemukan!");
+      console.log("💡 Pastikan sudah setting Variables di Dashboard Railway.");
+      process.exit(1);
     }
 
-    console.log("🌐 URI ditemukan (disensor):", uri.substring(0, 20) + "...");
+    // Menampilkan sedikit bagian URI untuk memastikan variabel terbaca
+    console.log(`🌐 Connecting to: ${uri.substring(0, 15)}...`);
 
-    // 🔌 CONNECT DB
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // biar cepat fail kalau error
+      serverSelectionTimeoutMS: 5000,
+      // Opsi di bawah membantu stabilitas koneksi di server cloud
+      socketTimeoutMS: 45000, 
     });
 
     console.log(`✅ MongoDB Terhubung: ${conn.connection.host}`);
-    console.log(`📦 Database: ${conn.connection.name}`);
+    console.log(`📦 Database Name: ${conn.connection.name}`);
 
   } catch (error) {
-    console.error("❌ MongoDB Error:", error.message);
+    console.error("❌ MongoDB Connection Error:");
+    console.error(error.message);
 
-    // Tambahan debug
-    if (error.message.includes("ECONNREFUSED")) {
-      console.log("💡 Kemungkinan: URI salah / DB tidak bisa diakses");
-    }
-
-    if (error.message.includes("authentication")) {
-      console.log("💡 Kemungkinan: username/password salah");
-    }
-
-    if (error.message.includes("undefined")) {
-      console.log("💡 Kemungkinan: MONGO_URI belum diset di Railway");
+    // Tips spesifik berdasarkan pesan error
+    if (error.message.includes("ENOTFOUND")) {
+      console.log("💡 Tips: Masalah DNS. Cek apakah database di Railway sudah 'Online'.");
+    } else if (error.message.includes("authentication")) {
+      console.log("💡 Tips: Username atau Password di URI salah.");
     }
 
     process.exit(1);

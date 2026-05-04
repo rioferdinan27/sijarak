@@ -6,7 +6,9 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-console.log("🔎 ENV MONGO_URI:", process.env.MONGO_URI ? "ADA" : "TIDAK ADA");
+// Log awal untuk memastikan ENV terbaca sebelum koneksi DB
+console.log("🔎 ENV Check - MONGO_URI:", process.env.MONGO_URI ? "Ditemukan" : "TIDAK ADA");
+console.log("🔎 ENV Check - PORT:", process.env.PORT || "3000 (Default)");
 
 // =====================
 // CONNECT DATABASE
@@ -54,12 +56,13 @@ app.use((req, res) => {
 // =====================
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+// Railway menyukai listen tanpa IP spesifik atau menggunakan host default
+const server = app.listen(PORT, () => {
   console.log(`
   ╔══════════════════════════════════════╗
-  ║   🚧 SIJARAK SERVER ONLINE 🚧        ║
-  ║   Port : ${PORT}                      ║
-  ║   Status: Running di Railway         ║
+  ║    🚧 SIJARAK SERVER ONLINE 🚧       ║
+  ║    Port   : ${PORT}                  ║
+  ║    Status : Ready for Railway        ║
   ╚══════════════════════════════════════╝
   `);
 });
@@ -69,5 +72,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 // =====================
 process.on('unhandledRejection', (err) => {
   console.log('❌ Unhandled Rejection:', err.message);
-  server.close(() => process.exit(1));
+  // Memberikan waktu log untuk tertulis sebelum exit
+  setTimeout(() => {
+    server.close(() => process.exit(1));
+  }, 1000);
 });
