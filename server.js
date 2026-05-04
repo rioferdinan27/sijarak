@@ -6,12 +6,12 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Log awal untuk memastikan ENV terbaca sebelum koneksi DB
-console.log("🔎 ENV Check - MONGO_URI:", process.env.MONGO_URI ? "Ditemukan" : "TIDAK ADA");
-console.log("🔎 ENV Check - PORT:", process.env.PORT || "3000 (Default)");
+// Log deteksi port & URI untuk debugging Railway
+console.log("🛠️  INFO: Mencoba inisialisasi server...");
+console.log("🌐 PORT ENV:", process.env.PORT || "3000 (Default)");
 
 // =====================
-// CONNECT DATABASE
+// DATABASE CONNECTION
 // =====================
 connectDB();
 
@@ -45,35 +45,24 @@ app.get('/', (req, res) => {
 });
 
 // =====================
-// 404 HANDLER
+// SERVER BINDING (RAILWAY FIX)
 // =====================
-app.use((req, res) => {
-  res.status(404).json({ pesan: 'Endpoint tidak ditemukan' });
-});
-
-// =====================
-// SERVER (RAILWAY SAFE)
-// =====================
+// Railway secara dinamis memberikan port melalui process.env.PORT
 const PORT = process.env.PORT || 3000;
 
-// Railway menyukai listen tanpa IP spesifik atau menggunakan host default
-const server = app.listen(PORT, () => {
+// WAJIB: Gunakan 0.0.0.0 agar bisa diakses dari luar container Railway
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`
   ╔══════════════════════════════════════╗
   ║    🚧 SIJARAK SERVER ONLINE 🚧       ║
   ║    Port   : ${PORT}                  ║
-  ║    Status : Ready for Railway        ║
+  ║    Status : Running (0.0.0.0)        ║
   ╚══════════════════════════════════════╝
   `);
 });
 
-// =====================
-// ERROR HANDLING GLOBAL
-// =====================
+// Error handling agar server tidak langsung mati tanpa log
 process.on('unhandledRejection', (err) => {
-  console.log('❌ Unhandled Rejection:', err.message);
-  // Memberikan waktu log untuk tertulis sebelum exit
-  setTimeout(() => {
-    server.close(() => process.exit(1));
-  }, 1000);
+  console.error('❌ Unhandled Rejection:', err.message);
+  server.close(() => process.exit(1));
 });
