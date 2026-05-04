@@ -6,6 +6,8 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+console.log("🔎 ENV MONGO_URI:", process.env.MONGO_URI ? "ADA" : "TIDAK ADA");
+
 // =====================
 // CONNECT DATABASE
 // =====================
@@ -48,11 +50,11 @@ app.use((req, res) => {
 });
 
 // =====================
-// SERVER (FIX RAILWAY PORT)
+// SERVER (RAILWAY SAFE)
 // =====================
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`
   ╔══════════════════════════════════════╗
   ║   🚧 SIJARAK SERVER ONLINE 🚧        ║
@@ -60,4 +62,12 @@ app.listen(PORT, '0.0.0.0', () => {
   ║   Status: Running di Railway         ║
   ╚══════════════════════════════════════╝
   `);
+});
+
+// =====================
+// ERROR HANDLING GLOBAL
+// =====================
+process.on('unhandledRejection', (err) => {
+  console.log('❌ Unhandled Rejection:', err.message);
+  server.close(() => process.exit(1));
 });
