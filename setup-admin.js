@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 
 async function buatAdmin() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
     console.log('✅ Terhubung ke MongoDB');
 
     // Import model setelah koneksi
