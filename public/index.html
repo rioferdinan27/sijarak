@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIJARAK — Sistem Cerdas Jalan Rusak</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a class="navbar-brand" href="index.html">
+        <div class="logo-icon">🚧</div>
+        SIJARAK
+      </a>
+      <div class="navbar-menu">
+        <a class="nav-link" href="#laporan-publik">Laporan Publik</a>
+        <a class="nav-link" href="#leaderboard">Leaderboard</a>
+        <div id="nav-auth">
+          <a class="nav-link" href="login.html">Masuk</a>
+          <a class="btn btn-primary" href="login.html">Daftar Gratis</a>
+        </div>
+        <div
+          id="nav-user"
+          style="display: none; align-items: center; gap: 0.75rem"
+        >
+          <a
+            class="btn btn-outline btn-sm"
+            id="nav-dashboard-link"
+            href="dashboard.html"
+            >Dashboard</a
+          >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              cursor: pointer;
+            "
+            onclick="window.location.href = 'dashboard.html'"
+          >
+            <div
+              style="
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: linear-gradient(
+                  135deg,
+                  var(--primary),
+                  var(--primary-dark)
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 700;
+                font-size: 0.85rem;
+                overflow: hidden;
+                flex-shrink: 0;
+              "
+              id="nav-avatar"
+            >
+              U
+            </div>
+            <span style="font-size: 0.875rem; font-weight: 600" id="nav-nama"
+              >User</span
+            >
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(249, 115, 22, 0.2);
+            color: #fb923c;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+          "
+        >
+          🆕 Sistem Pelaporan Digital Terpadu
+        </div>
+        <h1>Laporkan <span>Jalan Rusak</span>,<br />Jadikan Kota Lebih Baik</h1>
+        <p>
+          SIJARAK memudahkan warga melaporkan kerusakan jalan secara digital.
+          Setiap laporan ditindaklanjuti dan pelapor aktif mendapatkan poin
+          reward.
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <a href="login.html" class="btn btn-primary btn-lg"
+            >🚀 Mulai Lapor Sekarang</a
+          >
+          <a
+            href="#cara-kerja"
+            class="btn btn-lg"
+            style="
+              background: rgba(255, 255, 255, 0.15);
+              color: white;
+              border: 1.5px solid rgba(255, 255, 255, 0.3);
+            "
+            >Pelajari Cara Kerja</a
+          >
+        </div>
+        <div class="hero-stats" id="hero-stats">
+          <div class="hero-stat">
+            <div class="number" id="stat-total">0</div>
+            <div class="label">Total Laporan</div>
+          </div>
+          <div class="hero-stat">
+            <div class="number" id="stat-selesai">0</div>
+            <div class="label">Diselesaikan</div>
+          </div>
+          <div class="hero-stat">
+            <div class="number" id="stat-bulan">0</div>
+            <div class="label">Bulan Ini</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cara Kerja -->
+    <section class="section" id="cara-kerja" style="background: white">
+      <div class="container">
+        <div class="text-center mb-4">
+          <h2 style="font-size: 2rem; font-weight: 800">Cara Kerja SIJARAK</h2>
+          <p class="text-muted mt-2">Mudah, cepat, dan dapat reward</p>
+        </div>
+        <div class="grid-4">
+          <div style="text-align: center; padding: 1.5rem">
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem">📱</div>
+            <div
+              style="
+                background: var(--primary);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+              "
+            >
+              1
+            </div>
+            <h4 style="font-weight: 700; margin-bottom: 0.5rem">
+              Daftar & Login
+            </h4>
+            <p class="text-muted text-sm">Buat akun gratis dalam 1 menit</p>
+          </div>
+          <div style="text-align: center; padding: 1.5rem">
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem">📸</div>
+            <div
+              style="
+                background: var(--primary);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+              "
+            >
+              2
+            </div>
+            <h4 style="font-weight: 700; margin-bottom: 0.5rem">
+              Foto & Laporkan
+            </h4>
+            <p class="text-muted text-sm">
+              Ambil foto, isi lokasi dan deskripsi
+            </p>
+          </div>
+          <div style="text-align: center; padding: 1.5rem">
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem">🔍</div>
+            <div
+              style="
+                background: var(--primary);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+              "
+            >
+              3
+            </div>
+            <h4 style="font-weight: 700; margin-bottom: 0.5rem">
+              Admin Verifikasi
+            </h4>
+            <p class="text-muted text-sm">
+              Tim kami memverifikasi laporan Anda
+            </p>
+          </div>
+          <div style="text-align: center; padding: 1.5rem">
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem">⭐</div>
+            <div
+              style="
+                background: var(--primary);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+              "
+            >
+              4
+            </div>
+            <h4 style="font-weight: 700; margin-bottom: 0.5rem">Dapat Poin!</h4>
+            <p class="text-muted text-sm">
+              Laporan selesai = bonus poin ekstra
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Laporan Publik -->
+    <section class="section" id="laporan-publik">
+      <div class="container">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <div>
+            <h2 style="font-size: 1.75rem; font-weight: 800">
+              Laporan Terbaru
+            </h2>
+            <p class="text-muted text-sm mt-1">
+              Laporan kerusakan jalan dari seluruh wilayah
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+            <select
+              class="form-control"
+              id="filter-status"
+              onchange="muatLaporan()"
+              style="width: auto"
+            >
+              <option value="">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="diproses">Diproses</option>
+              <option value="selesai">Selesai</option>
+            </select>
+            <select
+              class="form-control"
+              id="filter-tingkat"
+              onchange="muatLaporan()"
+              style="width: auto"
+            >
+              <option value="">Semua Tingkat</option>
+              <option value="ringan">Ringan</option>
+              <option value="sedang">Sedang</option>
+              <option value="berat">Berat</option>
+              <option value="sangat_berat">Sangat Berat</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="grid-laporan" class="laporan-grid">
+          <!-- Laporan dimuat JS -->
+          <div class="empty-state" style="grid-column: 1/-1">
+            <div class="loading-spinner" style="margin: 0 auto 1rem"></div>
+            <p>Memuat laporan...</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem">
+          <button
+            class="btn btn-outline"
+            id="btn-muat-lebih"
+            onclick="muatLebih()"
+            style="display: none"
+          >
+            Muat Lebih Banyak
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Leaderboard -->
+    <section class="section" id="leaderboard" style="background: white">
+      <div class="container" style="max-width: 700px">
+        <div class="text-center mb-4">
+          <h2 style="font-size: 1.75rem; font-weight: 800">
+            🏆 Pelapor Terbaik
+          </h2>
+          <p class="text-muted mt-2">
+            Warga paling aktif dan berdedikasi bulan ini
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-body" id="leaderboard-list">
+            <div class="text-center text-muted" style="padding: 2rem">
+              <div class="loading-spinner" style="margin: 0 auto 1rem"></div>
+              Memuat data...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal Detail Laporan -->
+    <div class="modal-overlay" id="modal-detail">
+      <div class="modal" style="max-width: 680px">
+        <div class="modal-header">
+          <h3 id="modal-judul">Detail Laporan</h3>
+          <button class="modal-close" onclick="tutupModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modal-konten">
+          <!-- Konten dinamis -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer
+      style="
+        background: var(--secondary);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 2.5rem;
+        text-align: center;
+      "
+    >
+      <div
+        class="navbar-brand"
+        style="justify-content: center; margin-bottom: 1rem; color: white"
+      >
+        <div class="logo-icon">🚧</div>
+        <span>SIJARAK</span>
+      </div>
+      <p class="text-sm">
+        Sistem Cerdas Jalan Rusak — Workshop Pemrograman Web
+      </p>
+      <p class="text-sm" style="margin-top: 0.25rem; opacity: 0.5">
+        Teknik Informatika PENS · 2026
+      </p>
+    </footer>
+
+    <script>
+      const API = "";
+      let halamanSekarang = 1;
+      const LIMIT = 9;
+
+      // Cek status login
+      function cekLogin() {
+        const user = JSON.parse(localStorage.getItem("sijarak_user") || "null");
+        const token = localStorage.getItem("sijarak_token");
+        if (user && token) {
+          document.getElementById("nav-auth").style.display = "none";
+          document.getElementById("nav-user").style.display = "flex";
+          document.getElementById("nav-nama").textContent =
+            user.nama.split(" ")[0];
+          const avatarEl = document.getElementById("nav-avatar");
+          if (user.avatar) {
+            avatarEl.innerHTML = `<img src="${user.avatar}" alt="${user.nama}" style="width:100%;height:100%;object-fit:cover">`;
+          } else {
+            avatarEl.textContent = user.nama[0].toUpperCase();
+          }
+          if (user.role === "admin")
+            document.getElementById("nav-dashboard-link").href = "admin.html";
+        }
+      }
+
+      // Muat statistik
+      async function muatStatistik() {
+        try {
+          const res = await fetch("/api/laporan/statistik/ringkasan");
+          const data = await res.json();
+          if (data.berhasil) {
+            animasiAngka("stat-total", data.data.total);
+            animasiAngka("stat-selesai", data.data.selesai);
+            animasiAngka("stat-bulan", data.data.bulanIni);
+          }
+        } catch (e) {}
+      }
+
+      function animasiAngka(id, target) {
+        let current = 0;
+        const el = document.getElementById(id);
+        const step = Math.ceil(target / 30);
+        const interval = setInterval(() => {
+          current = Math.min(current + step, target);
+          el.textContent = current;
+          if (current >= target) clearInterval(interval);
+        }, 50);
+      }
+
+      // Muat laporan publik
+      async function muatLaporan(reset = true) {
+        if (reset) halamanSekarang = 1;
+        const status = document.getElementById("filter-status").value;
+        const tingkat = document.getElementById("filter-tingkat").value;
+        let url = `/api/laporan?halaman=${halamanSekarang}&limit=${LIMIT}`;
+        if (status) url += `&status=${status}`;
+        if (tingkat) url += `&tingkat=${tingkat}`;
+
+        if (reset)
+          document.getElementById("grid-laporan").innerHTML =
+            '<div class="empty-state" style="grid-column:1/-1"><div class="loading-spinner" style="margin:0 auto 1rem"></div><p>Memuat laporan...</p></div>';
+
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          const grid = document.getElementById("grid-laporan");
+
+          if (reset) grid.innerHTML = "";
+
+          if (!data.data || data.data.length === 0) {
+            if (reset)
+              grid.innerHTML =
+                '<div class="empty-state" style="grid-column:1/-1"><div class="icon">📋</div><p>Belum ada laporan yang sesuai filter.</p></div>';
+            document.getElementById("btn-muat-lebih").style.display = "none";
+            return;
+          }
+
+          data.data.forEach((l) =>
+            grid.insertAdjacentHTML("beforeend", kartuLaporan(l)),
+          );
+          document.getElementById("btn-muat-lebih").style.display =
+            halamanSekarang < data.totalHalaman ? "inline-flex" : "none";
+        } catch (e) {
+          document.getElementById("grid-laporan").innerHTML =
+            '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><p>Gagal memuat laporan. Server belum aktif?</p></div>';
+        }
+      }
+
+      function muatLebih() {
+        halamanSekarang++;
+        muatLaporan(false);
+      }
+
+      function kartuLaporan(l) {
+        const badgeStatus = {
+          pending: "badge-pending",
+          diproses: "badge-diproses",
+          selesai: "badge-selesai",
+          ditolak: "badge-ditolak",
+        };
+        const badgeTingkat = {
+          ringan: "badge-ringan",
+          sedang: "badge-sedang",
+          berat: "badge-berat",
+          sangat_berat: "badge-sangat_berat",
+        };
+        const labelTingkat = {
+          ringan: "Ringan",
+          sedang: "Sedang",
+          berat: "Berat",
+          sangat_berat: "Sangat Berat",
+        };
+        const labelStatus = {
+          pending: "Pending",
+          diproses: "Diproses",
+          selesai: "Selesai",
+          ditolak: "Ditolak",
+        };
+        const foto =
+          l.foto && l.foto.length > 0
+            ? `<img src="${l.foto[0]}" alt="${l.judul}" style="width:100%;height:180px;object-fit:cover">`
+            : `<div style="width:100%;height:180px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:3rem">🚧</div>`;
+        const tgl = new Date(l.createdAt).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+
+        return `
+  <div class="card laporan-card" onclick="lihatDetail('${l._id}')">
+    ${foto}
+    <div class="laporan-info">
+      <div class="laporan-meta">
+        <span class="badge ${badgeStatus[l.status]}">${labelStatus[l.status]}</span>
+        <span class="badge ${badgeTingkat[l.tingkatKerusakan]}">${labelTingkat[l.tingkatKerusakan]}</span>
+      </div>
+      <div class="laporan-judul">${l.judul}</div>
+      <div class="laporan-lokasi">📍 ${l.lokasi?.alamat || "Lokasi tidak diketahui"}</div>
+    </div>
+    <div class="laporan-footer">
+      <span class="text-sm text-muted">👤 ${l.pelapor?.nama || "Anonim"} · ${tgl}</span>
+      <span class="laporan-poin">⭐ ${l.poinDiberikan} poin</span>
+    </div>
+  </div>`;
+      }
+
+      async function lihatDetail(id) {
+        const modal = document.getElementById("modal-detail");
+        document.getElementById("modal-konten").innerHTML =
+          '<div style="text-align:center;padding:2rem"><div class="loading-spinner" style="margin:0 auto 1rem"></div></div>';
+        modal.classList.add("aktif");
+
+        try {
+          const res = await fetch(`/api/laporan/${id}`);
+          const { data: l } = await res.json();
+          const tgl = new Date(l.createdAt).toLocaleDateString("id-ID", {
+            dateStyle: "long",
+          });
+          const fotoHtml = (l.foto || [])
+            .map(
+              (f) =>
+                `<img src="${f}" style="width:100%;border-radius:8px;margin-bottom:0.5rem;max-height:300px;object-fit:cover" onclick="window.open('${f}')">`,
+            )
+            .join("");
+
+          document.getElementById("modal-judul").textContent = l.judul;
+          document.getElementById("modal-konten").innerHTML = `
+      ${fotoHtml || '<div style="background:var(--gray-100);height:120px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:1rem">🚧</div>'}
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+        <span class="badge badge-${l.status}">${l.status}</span>
+        <span class="badge badge-${l.tingkatKerusakan}">${l.tingkatKerusakan}</span>
+        <span class="badge" style="background:var(--gray-100);color:var(--gray-700)">${l.jenisKerusakan}</span>
+      </div>
+      <p style="font-size:0.9rem;margin-bottom:1rem">${l.deskripsi}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.875rem;margin-bottom:1rem">
+        <div><span class="text-muted">📍 Lokasi:</span><br><strong>${l.lokasi?.alamat}</strong></div>
+        <div><span class="text-muted">👤 Pelapor:</span><br><strong>${l.pelapor?.nama}</strong></div>
+        <div><span class="text-muted">📅 Tanggal:</span><br><strong>${tgl}</strong></div>
+        <div><span class="text-muted">⭐ Poin:</span><br><strong>${l.poinDiberikan} poin</strong></div>
+      </div>
+      ${
+        l.riwayatStatus && l.riwayatStatus.length > 0
+          ? `
+      <h5 style="font-weight:700;margin-bottom:0.75rem">Riwayat Status</h5>
+      <div class="timeline">
+        ${l.riwayatStatus
+          .map(
+            (r) => `
+          <div class="timeline-item">
+            <div class="timeline-dot ${r.status}"></div>
+            <div class="timeline-content">
+              <strong>${r.status}</strong>${r.catatan ? ` — ${r.catatan}` : ""}
+              <div class="timeline-date">${new Date(r.tanggal).toLocaleDateString("id-ID", { dateStyle: "medium" })}</div>
+            </div>
+          </div>`,
+          )
+          .join("")}
+      </div>`
+          : ""
+      }
+    `;
+        } catch (e) {
+          document.getElementById("modal-konten").innerHTML =
+            '<p class="text-muted text-center">Gagal memuat detail laporan.</p>';
+        }
+      }
+
+      function tutupModal() {
+        document.getElementById("modal-detail").classList.remove("aktif");
+      }
+
+      // Muat leaderboard
+      async function muatLeaderboard() {
+        try {
+          const res = await fetch("/api/auth/leaderboard");
+          const data = await res.json();
+          const list = document.getElementById("leaderboard-list");
+
+          if (!data.data || data.data.length === 0) {
+            list.innerHTML =
+              '<p class="text-center text-muted" style="padding:2rem">Belum ada data.</p>';
+            return;
+          }
+
+          const rankClass = (i) =>
+            i === 0
+              ? "rank-1"
+              : i === 1
+                ? "rank-2"
+                : i === 2
+                  ? "rank-3"
+                  : "rank-other";
+          const medal = (i) =>
+            i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
+
+          list.innerHTML = data.data
+            .map(
+              (u, i) => `
+      <div class="leaderboard-item">
+        <div class="rank-number ${rankClass(i)}">${medal(i)}</div>
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700">${u.nama[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">${u.nama}</div>
+          <div class="text-muted text-sm">${u.totalLaporan} laporan · ${u.laporanDiterima} diterima</div>
+        </div>
+        <div style="font-weight:800;color:var(--primary)">⭐ ${u.totalPoin}</div>
+      </div>`,
+            )
+            .join("");
+        } catch (e) {}
+      }
+
+      // Close modal on overlay click
+      document
+        .getElementById("modal-detail")
+        .addEventListener("click", function (e) {
+          if (e.target === this) tutupModal();
+        });
+
+      // Init
+      cekLogin();
+      muatStatistik();
+      muatLaporan();
+      muatLeaderboard();
+    </script>
+  </body>
+</html>

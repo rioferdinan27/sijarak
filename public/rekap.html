@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rekap Laporan — SIJARAK Admin</title>
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- FIX BUG #3: Pakai unpkg sebagai CDN utama (lebih stabil untuk localhost) -->
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+      .filter-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray-700);
+      }
+
+      .ringkasan-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .rkp-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1.1rem 1.25rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+      .rkp-icon {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+      }
+      .rkp-angka {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .rkp-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 3px;
+        font-weight: 500;
+      }
+
+      .bar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .bar-item {
+        display: grid;
+        grid-template-columns: 110px 1fr 50px;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.82rem;
+      }
+      .bar-track {
+        background: var(--gray-100);
+        border-radius: 20px;
+        height: 12px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 0.8s ease;
+      }
+      .bar-count {
+        font-weight: 700;
+        text-align: right;
+      }
+
+      .preview-header {
+        background: linear-gradient(135deg, #0f172a, #1e3a5f);
+        color: white;
+        padding: 1.5rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+      .preview-section {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+
+      .tab-btn {
+        padding: 8px 18px;
+        border: none;
+        background: none;
+        border-bottom: 3px solid transparent;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--gray-500);
+        transition: all 0.15s;
+      }
+      .tab-btn.on {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .loading-rekap {
+        display: none;
+        text-align: center;
+        padding: 3rem;
+        color: var(--gray-500);
+      }
+      .empty-rekap {
+        text-align: center;
+        padding: 3rem;
+        color: var(--gray-400);
+      }
+      .empty-rekap .icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      /* FIX BUG #1: style untuk error-state agar tidak menumpuk */
+      .error-rekap {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        color: var(--danger, #ef4444);
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+      }
+      .error-rekap .icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a class="navbar-brand" href="index.html">
+        <div class="logo-icon">🚧</div>
+        SIJARAK
+        <span
+          style="
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-weight: 700;
+          "
+          >ADMIN</span
+        >
+      </a>
+      <div class="navbar-menu">
+        <a class="nav-link" href="admin.html">← Dashboard Admin</a>
+        <button class="btn btn-secondary btn-sm" onclick="keluar()">
+          Keluar
+        </button>
+      </div>
+    </nav>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <div class="container" style="max-width: 1100px; padding: 2rem 1.5rem">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        "
+      >
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800">📄 Rekap Laporan</h2>
+          <p class="text-muted text-sm" style="margin-top: 2px">
+            Generate laporan rekap kerusakan jalan dalam format PDF
+          </p>
+        </div>
+        <button
+          class="btn btn-primary btn-lg"
+          id="btn-generate-pdf"
+          onclick="generatePDF()"
+          disabled
+        >
+          📥 Download PDF
+        </button>
+      </div>
+
+      <!-- Filter Card -->
+      <div class="filter-card">
+        <div
+          style="
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+          "
+        >
+          🔧 Pilih Periode Rekap
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Tipe Periode</label>
+            <select
+              class="form-control"
+              id="sel-tipe"
+              onchange="gantiTipe()"
+              style="width: 150px"
+            >
+              <option value="bulan">Per Bulan</option>
+              <option value="minggu">Per Minggu</option>
+              <option value="tahun">Per Tahun</option>
+            </select>
+          </div>
+
+          <div class="filter-group" id="wrap-bulan">
+            <label>Pilih Bulan</label>
+            <select class="form-control" id="sel-bulan" style="width: 200px">
+              <option value="">Memuat...</option>
+            </select>
+          </div>
+
+          <div class="filter-group" id="wrap-minggu" style="display: none">
+            <label>Pilih Minggu</label>
+            <select class="form-control" id="sel-minggu" style="width: 200px">
+              <option value="0">Minggu ini</option>
+              <option value="1">Minggu lalu</option>
+              <option value="2">2 minggu lalu</option>
+              <option value="3">3 minggu lalu</option>
+              <option value="4">4 minggu lalu</option>
+            </select>
+          </div>
+
+          <div class="filter-group" id="wrap-tahun" style="display: none">
+            <label>Pilih Tahun</label>
+            <select class="form-control" id="sel-tahun" style="width: 150px">
+              <option value="">Memuat...</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <!-- FIX BUG #2: tambah id agar bisa disable saat loading -->
+            <button
+              class="btn btn-primary"
+              id="btn-tampil"
+              onclick="muatRekap()"
+            >
+              🔍 Tampilkan Rekap
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-rekap" id="loading-rekap">
+        <div class="loading-spinner" style="margin: 0 auto 1rem"></div>
+        <p>Memuat data rekap...</p>
+      </div>
+
+      <!-- FIX BUG #1: Error state statis — tidak muncul berulang seperti toast loop -->
+      <div class="error-rekap" id="error-rekap">
+        <div class="icon">⚠️</div>
+        <p style="font-weight: 700; margin-bottom: 4px" id="error-rekap-pesan">
+          Gagal mengambil data rekap.
+        </p>
+        <p class="text-sm" style="color: #b91c1c" id="error-rekap-detail"></p>
+        <button
+          class="btn btn-sm"
+          style="margin-top: 1rem; background: #ef4444; color: white"
+          onclick="muatRekap()"
+        >
+          🔄 Coba Lagi
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-rekap" id="empty-rekap">
+        <div class="icon">📋</div>
+        <p style="font-weight: 600">
+          Pilih periode lalu klik "Tampilkan Rekap"
+        </p>
+        <p class="text-sm" style="margin-top: 4px">
+          Data rekap akan ditampilkan di sini sebelum di-download PDF
+        </p>
+      </div>
+
+      <!-- Konten Rekap -->
+      <div id="konten-rekap" style="display: none">
+        <!-- Header Rekap -->
+        <div class="preview-section">
+          <div class="preview-header">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 1rem;
+              "
+            >
+              <div>
+                <div
+                  style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 4px"
+                >
+                  LAPORAN REKAP
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 800" id="rkp-judul">
+                  -
+                </h3>
+                <p
+                  style="font-size: 0.85rem; opacity: 0.8; margin-top: 4px"
+                  id="rkp-rentang"
+                >
+                  -
+                </p>
+              </div>
+              <div style="text-align: right; font-size: 0.8rem; opacity: 0.75">
+                <div>Dibuat: <span id="rkp-dibuat">-</span></div>
+                <div>Oleh Admin: <span id="rkp-admin">-</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ringkasan Angka -->
+        <div class="ringkasan-grid" id="ringkasan-grid"></div>
+
+        <!-- Tab -->
+        <div class="preview-section">
+          <div
+            style="
+              border-bottom: 1px solid var(--gray-200);
+              padding: 0 1rem;
+              display: flex;
+              gap: 0;
+            "
+          >
+            <button class="tab-btn on" onclick="gantiTab('grafik', this)">
+              📊 Grafik
+            </button>
+            <button class="tab-btn" onclick="gantiTab('tabel', this)">
+              📋 Tabel Laporan
+            </button>
+            <button class="tab-btn" onclick="gantiTab('pelapor', this)">
+              🏆 Top Pelapor
+            </button>
+          </div>
+
+          <!-- Grafik Tab -->
+          <div id="tab-grafik" style="padding: 1.5rem">
+            <div class="grid-2" style="gap: 1.5rem">
+              <div>
+                <h5
+                  style="
+                    font-weight: 700;
+                    margin-bottom: 1rem;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Berdasarkan Tingkat Kerusakan
+                </h5>
+                <div class="bar-chart" id="chart-tingkat"></div>
+              </div>
+              <div>
+                <h5
+                  style="
+                    font-weight: 700;
+                    margin-bottom: 1rem;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Berdasarkan Jenis Kerusakan
+                </h5>
+                <div class="bar-chart" id="chart-jenis"></div>
+              </div>
+            </div>
+            <div style="margin-top: 1.5rem">
+              <h5
+                style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem"
+              >
+                Distribusi Status Laporan
+              </h5>
+              <div
+                id="chart-status"
+                style="display: flex; gap: 0.75rem; flex-wrap: wrap"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Tabel Tab -->
+          <div id="tab-tabel" style="display: none">
+            <div class="table-wrapper">
+              <table id="tabel-laporan">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Judul Laporan</th>
+                    <th>Pelapor</th>
+                    <th>Lokasi</th>
+                    <th>Tingkat</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                    <th>Poin</th>
+                    <th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-laporan"></tbody>
+              </table>
+            </div>
+            <div
+              style="
+                padding: 0.75rem 1rem;
+                background: var(--gray-50);
+                border-top: 1px solid var(--gray-100);
+                font-size: 0.8rem;
+                color: var(--gray-500);
+              "
+              id="info-tabel"
+            ></div>
+          </div>
+
+          <!-- Top Pelapor Tab -->
+          <div id="tab-pelapor" style="display: none; padding: 1.5rem">
+            <div id="list-pelapor"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ─── AUTH CHECK ────────────────────────────────────────────────────────────────
+      // FIX BUG #1: Cek token dulu TANPA langsung redirect agar tidak infinite loop
+      const TOKEN = localStorage.getItem("sijarak_token");
+      const USER = JSON.parse(localStorage.getItem("sijarak_user") || "null");
+
+      if (!TOKEN || !USER || USER.role !== "admin") {
+        // Hanya redirect jika BELUM di halaman login (hindari infinite redirect)
+        if (!window.location.pathname.includes("login.html")) {
+          alert("Akses ditolak! Silakan login sebagai admin.");
+          window.location.href = "login.html";
+        }
+      }
+
+      // ─── STATE ─────────────────────────────────────────────────────────────────────
+      let dataRekap = null;
+      let sedangMuat = false; // FIX BUG #2: flag agar tidak double-request
+
+      // ─── TOAST ─────────────────────────────────────────────────────────────────────
+      // FIX BUG #1: Tambah debounce agar toast tidak tumpuk berkali-kali
+      let toastTimeout = null;
+      function toast(pesan, tipe = "success") {
+        // Hapus toast sebelumnya yang masih ada untuk type yang sama
+        const existing = document.querySelectorAll(`.toast-${tipe}`);
+        existing.forEach((el) => el.remove());
+
+        const el = document.createElement("div");
+        el.className = `toast toast-${tipe}`;
+        el.innerHTML =
+          (tipe === "success" ? "✅" : tipe === "error" ? "❌" : "ℹ️") +
+          " " +
+          pesan;
+        document.getElementById("toast-container").appendChild(el);
+        setTimeout(() => {
+          el.style.animation = "slideOut .3s ease forwards";
+          setTimeout(() => el.remove(), 300);
+        }, 3500);
+      }
+
+      function keluar() {
+        localStorage.removeItem("sijarak_token");
+        localStorage.removeItem("sijarak_user");
+        window.location.href = "login.html";
+      }
+
+      // ─── UI HELPERS ────────────────────────────────────────────────────────────────
+      function tampilError(pesan, detail = "") {
+        document.getElementById("loading-rekap").style.display = "none";
+        document.getElementById("konten-rekap").style.display = "none";
+        document.getElementById("empty-rekap").style.display = "none";
+        document.getElementById("error-rekap").style.display = "block";
+        document.getElementById("error-rekap-pesan").textContent = pesan;
+        document.getElementById("error-rekap-detail").textContent = detail;
+        document.getElementById("btn-generate-pdf").disabled = true;
+      }
+
+      function sembunyikanSemua() {
+        document.getElementById("loading-rekap").style.display = "none";
+        document.getElementById("konten-rekap").style.display = "none";
+        document.getElementById("empty-rekap").style.display = "none";
+        document.getElementById("error-rekap").style.display = "none";
+      }
+
+      function gantiTipe() {
+        const t = document.getElementById("sel-tipe").value;
+        document.getElementById("wrap-bulan").style.display =
+          t === "bulan" ? "flex" : "none";
+        document.getElementById("wrap-minggu").style.display =
+          t === "minggu" ? "flex" : "none";
+        document.getElementById("wrap-tahun").style.display =
+          t === "tahun" ? "flex" : "none";
+      }
+
+      function gantiTab(nama, el) {
+        ["grafik", "tabel", "pelapor"].forEach((t) => {
+          document.getElementById("tab-" + t).style.display = "none";
+        });
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("on"));
+        document.getElementById("tab-" + nama).style.display = "block";
+        el.classList.add("on");
+      }
+
+      // ─── FALLBACK OPSI ─────────────────────────────────────────────────────────────
+      function pasangFallbackBulan() {
+        const selBulan = document.getElementById("sel-bulan");
+        selBulan.innerHTML = "";
+        const now = new Date();
+        for (let i = 0; i < 12; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const opt = document.createElement("option");
+          opt.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          opt.textContent = d.toLocaleDateString("id-ID", {
+            month: "long",
+            year: "numeric",
+          });
+          selBulan.appendChild(opt);
+        }
+      }
+
+      function pasangFallbackTahun() {
+        const selTahun = document.getElementById("sel-tahun");
+        selTahun.innerHTML = "";
+        const now = new Date();
+        for (let i = 0; i < 3; i++) {
+          const opt = document.createElement("option");
+          opt.value = String(now.getFullYear() - i);
+          opt.textContent = `Tahun ${now.getFullYear() - i}`;
+          selTahun.appendChild(opt);
+        }
+      }
+
+      // ─── MUAT OPSI BULAN & TAHUN ───────────────────────────────────────────────────
+      // FIX BUG #1: Setiap fetch dicek status HTTP-nya. Jika gagal pakai fallback,
+      //             TIDAK throw error agar tidak memicu toast loop.
+      async function muatOpsi() {
+        try {
+          // --- Opsi Bulan ---
+          let dataBulan = null;
+          try {
+            const resBulan = await fetch("/api/rekap/opsi-bulan", {
+              headers: { Authorization: `Bearer ${TOKEN}` },
+            });
+
+            // FIX: cek HTTP status sebelum parse JSON
+            if (resBulan.ok) {
+              const json = await resBulan.json();
+              if (json.berhasil && json.data && json.data.length > 0) {
+                dataBulan = json.data;
+              }
+            } else if (resBulan.status === 401) {
+              // Token expired / tidak valid — redirect ke login
+              console.warn("Token tidak valid (401). Redirect ke login.");
+              keluar();
+              return;
+            }
+            // Status lain (500 dll) → fallback, tidak throw
+          } catch (fetchErr) {
+            console.warn(
+              "Fetch opsi-bulan gagal, pakai fallback:",
+              fetchErr.message,
+            );
+          }
+
+          const selBulan = document.getElementById("sel-bulan");
+          selBulan.innerHTML = "";
+          if (dataBulan) {
+            dataBulan.forEach((o) => {
+              const opt = document.createElement("option");
+              opt.value = o.nilai;
+              opt.textContent = `${o.label} (${o.jumlah} laporan)`;
+              selBulan.appendChild(opt);
+            });
+          } else {
+            pasangFallbackBulan();
+          }
+
+          // --- Opsi Tahun ---
+          let dataTahun = null;
+          try {
+            const resTahun = await fetch("/api/rekap/opsi-tahun", {
+              headers: { Authorization: `Bearer ${TOKEN}` },
+            });
+            if (resTahun.ok) {
+              const json = await resTahun.json();
+              if (json.berhasil && json.data && json.data.length > 0) {
+                dataTahun = json.data;
+              }
+            } else if (resTahun.status === 401) {
+              keluar();
+              return;
+            }
+          } catch (fetchErr) {
+            console.warn(
+              "Fetch opsi-tahun gagal, pakai fallback:",
+              fetchErr.message,
+            );
+          }
+
+          const selTahun = document.getElementById("sel-tahun");
+          selTahun.innerHTML = "";
+          if (dataTahun) {
+            dataTahun.forEach((o) => {
+              const opt = document.createElement("option");
+              opt.value = o.nilai;
+              opt.textContent = `${o.label} (${o.jumlah} laporan)`;
+              selTahun.appendChild(opt);
+            });
+          } else {
+            pasangFallbackTahun();
+          }
+        } catch (e) {
+          // Error tak terduga di luar fetch
+          console.error("muatOpsi error:", e);
+          pasangFallbackBulan();
+          pasangFallbackTahun();
+        }
+      }
+
+      // ─── MUAT DATA REKAP ───────────────────────────────────────────────────────────
+      // FIX BUG #2: Guard dengan flag `sedangMuat` agar tidak double-request
+      async function muatRekap() {
+        if (sedangMuat) return; // Cegah double klik
+
+        const tipe = document.getElementById("sel-tipe").value;
+        let nilai;
+        if (tipe === "bulan")
+          nilai = document.getElementById("sel-bulan").value;
+        if (tipe === "minggu")
+          nilai = document.getElementById("sel-minggu").value;
+        if (tipe === "tahun")
+          nilai = document.getElementById("sel-tahun").value;
+
+        // nilai '0' valid (minggu ini), hanya tolak string kosong
+        if (!nilai && nilai !== "0") {
+          toast("Pilih periode terlebih dahulu!", "error");
+          return;
+        }
+
+        sedangMuat = true;
+        sembunyikanSemua();
+        document.getElementById("loading-rekap").style.display = "block";
+        document.getElementById("btn-generate-pdf").disabled = true;
+        document.getElementById("btn-tampil").disabled = true;
+
+        try {
+          const res = await fetch(
+            `/api/rekap/data?tipe=${encodeURIComponent(tipe)}&nilai=${encodeURIComponent(nilai)}`,
+            {
+              headers: { Authorization: `Bearer ${TOKEN}` },
+            },
+          );
+
+          // FIX BUG #2: Cek status HTTP sebelum parse JSON
+          if (res.status === 401) {
+            tampilError(
+              "Sesi habis. Silakan login ulang.",
+              "Token tidak valid atau sudah expired.",
+            );
+            setTimeout(() => keluar(), 2000);
+            return;
+          }
+
+          if (res.status === 403) {
+            tampilError(
+              "Akses ditolak.",
+              "Hanya admin yang dapat melihat rekap.",
+            );
+            return;
+          }
+
+          // FIX: Tangkap body error server dengan benar
+          let json;
+          try {
+            json = await res.json();
+          } catch (parseErr) {
+            tampilError(
+              "Gagal membaca respons server.",
+              `Status HTTP: ${res.status}`,
+            );
+            return;
+          }
+
+          if (!res.ok || !json.berhasil) {
+            // Tampilkan pesan error SERVER secara statis — bukan toast loop
+            tampilError(
+              json.pesan || "Gagal mengambil data rekap.",
+              `Status HTTP: ${res.status}`,
+            );
+            return;
+          }
+
+          dataRekap = json.data;
+          renderRekap(dataRekap);
+          document.getElementById("konten-rekap").style.display = "block";
+          document.getElementById("btn-generate-pdf").disabled = false;
+          toast("Data rekap berhasil dimuat! ✅");
+        } catch (e) {
+          // Network error (server mati, CORS, dll)
+          console.error("muatRekap error:", e);
+          tampilError(
+            "Tidak dapat terhubung ke server.",
+            "Pastikan server backend sudah berjalan di localhost.",
+          );
+        } finally {
+          sedangMuat = false;
+          document.getElementById("loading-rekap").style.display = "none";
+          document.getElementById("btn-tampil").disabled = false;
+        }
+      }
+
+      // ─── RENDER REKAP ──────────────────────────────────────────────────────────────
+      function renderRekap(d) {
+        const {
+          meta,
+          ringkasan,
+          perTingkat,
+          perJenis,
+          topPelapor,
+          daftarLaporan,
+        } = d;
+
+        document.getElementById("rkp-judul").textContent =
+          `Rekap Laporan — ${meta.label}`;
+        document.getElementById("rkp-rentang").textContent =
+          `${new Date(meta.awal).toLocaleDateString("id-ID", { dateStyle: "long" })} s/d ${new Date(meta.akhir).toLocaleDateString("id-ID", { dateStyle: "long" })}`;
+        document.getElementById("rkp-dibuat").textContent = new Date(
+          meta.dibuatpada ?? meta.dibuatPada,
+        ).toLocaleString("id-ID");
+        document.getElementById("rkp-admin").textContent = meta.dibuatOleh;
+
+        // Ringkasan cards
+        document.getElementById("ringkasan-grid").innerHTML = `
+    <div class="rkp-card"><div class="rkp-icon">📋</div><div class="rkp-angka">${ringkasan.totalLaporan}</div><div class="rkp-label">Total Laporan</div></div>
+    <div class="rkp-card" style="border-top:3px solid var(--warning)"><div class="rkp-icon">⏳</div><div class="rkp-angka" style="color:var(--warning)">${ringkasan.pending}</div><div class="rkp-label">Pending</div></div>
+    <div class="rkp-card" style="border-top:3px solid var(--accent)"><div class="rkp-icon">🔧</div><div class="rkp-angka" style="color:var(--accent)">${ringkasan.diproses}</div><div class="rkp-label">Diproses</div></div>
+    <div class="rkp-card" style="border-top:3px solid var(--success)"><div class="rkp-icon">✅</div><div class="rkp-angka" style="color:var(--success)">${ringkasan.selesai}</div><div class="rkp-label">Selesai</div></div>
+    <div class="rkp-card" style="border-top:3px solid var(--danger)"><div class="rkp-icon">❌</div><div class="rkp-angka" style="color:var(--danger)">${ringkasan.ditolak}</div><div class="rkp-label">Ditolak</div></div>
+    <div class="rkp-card" style="border-top:3px solid var(--primary)"><div class="rkp-icon">⭐</div><div class="rkp-angka" style="color:var(--primary)">${ringkasan.totalPoin}</div><div class="rkp-label">Total Poin Dibagikan</div></div>`;
+
+        // Chart Tingkat
+        const totalT = perTingkat.reduce((s, t) => s + t.jumlah, 0) || 1;
+        const warnaTingkat = {
+          ringan: "#22c55e",
+          sedang: "#f59e0b",
+          berat: "#f97316",
+          sangat_berat: "#ef4444",
+        };
+        const labelTingkat = {
+          ringan: "Ringan",
+          sedang: "Sedang",
+          berat: "Berat",
+          sangat_berat: "Sangat Berat",
+        };
+        document.getElementById("chart-tingkat").innerHTML =
+          perTingkat
+            .map(
+              (t) => `
+    <div class="bar-item">
+      <span>${labelTingkat[t._id] || t._id}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((t.jumlah / totalT) * 100)}%;background:${warnaTingkat[t._id] || "#888"}"></div></div>
+      <span class="bar-count">${t.jumlah}</span>
+    </div>`,
+            )
+            .join("") || '<p class="text-muted text-sm">Tidak ada data</p>';
+
+        // Chart Jenis
+        const totalJ = perJenis.reduce((s, j) => s + j.jumlah, 0) || 1;
+        const labelJenis = {
+          berlubang: "Berlubang",
+          retak: "Retak/Pecah",
+          amblas: "Amblas",
+          longsor: "Longsor",
+          banjir: "Tergenang",
+          lainnya: "Lainnya",
+        };
+        document.getElementById("chart-jenis").innerHTML =
+          perJenis
+            .map(
+              (j) => `
+    <div class="bar-item">
+      <span>${labelJenis[j._id] || j._id}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((j.jumlah / totalJ) * 100)}%;background:var(--accent)"></div></div>
+      <span class="bar-count">${j.jumlah}</span>
+    </div>`,
+            )
+            .join("") || '<p class="text-muted text-sm">Tidak ada data</p>';
+
+        // Chart Status
+        const stWarna = {
+          pending: "#f59e0b",
+          diproses: "#3b82f6",
+          selesai: "#22c55e",
+          ditolak: "#ef4444",
+        };
+        const stLabel = {
+          pending: "Pending",
+          diproses: "Diproses",
+          selesai: "Selesai",
+          ditolak: "Ditolak",
+        };
+        const stData = [
+          { k: "pending", v: ringkasan.pending },
+          { k: "diproses", v: ringkasan.diproses },
+          { k: "selesai", v: ringkasan.selesai },
+          { k: "ditolak", v: ringkasan.ditolak },
+        ].filter((s) => s.v > 0);
+        document.getElementById("chart-status").innerHTML =
+          stData
+            .map(
+              (s) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--gray-50);border-radius:10px;padding:10px 14px;border:1.5px solid ${stWarna[s.k]}20">
+      <div style="width:14px;height:14px;border-radius:50%;background:${stWarna[s.k]};flex-shrink:0"></div>
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;color:${stWarna[s.k]}">${s.v}</div>
+        <div style="font-size:0.72rem;color:var(--gray-500)">${stLabel[s.k]}</div>
+      </div>
+    </div>`,
+            )
+            .join("") || '<p class="text-muted text-sm">Tidak ada data</p>';
+
+        // Tabel Laporan
+        document.getElementById("tbody-laporan").innerHTML =
+          daftarLaporan
+            .map(
+              (l, i) => `
+    <tr>
+      <td class="text-muted text-sm">${i + 1}</td>
+      <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.judul || ""}">${l.judul || "-"}</td>
+      <td class="text-sm">${l.pelapor?.nama || "-"}</td>
+      <td class="text-sm text-muted" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.lokasi?.alamat || "-"}</td>
+      <td><span class="badge badge-${l.tingkatKerusakan}" style="font-size:0.68rem">${l.tingkatKerusakan}</span></td>
+      <td class="text-sm">${l.jenisKerusakan || "-"}</td>
+      <td><span class="badge badge-${l.status}" style="font-size:0.68rem">${l.status}</span></td>
+      <td style="font-weight:700;color:var(--primary)">⭐ ${l.poinDiberikan ?? 0}</td>
+      <td class="text-sm text-muted">${new Date(l.createdAt).toLocaleDateString("id-ID")}</td>
+    </tr>`,
+            )
+            .join("") ||
+          '<tr><td colspan="9" class="text-center text-muted" style="padding:2rem">Tidak ada laporan</td></tr>';
+        document.getElementById("info-tabel").textContent =
+          `Menampilkan ${daftarLaporan.length} laporan${daftarLaporan.length >= 100 ? " (maks. 100)" : ""}`;
+
+        // Top Pelapor
+        const medalList = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+        document.getElementById("list-pelapor").innerHTML =
+          topPelapor.length > 0
+            ? topPelapor
+                .map(
+                  (p, i) => `
+      <div style="display:flex;align-items:center;gap:1rem;padding:0.875rem;border-bottom:1px solid var(--gray-100)">
+        <div style="font-size:1.5rem;width:36px;text-align:center">${medalList[i] || `#${i + 1}`}</div>
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0">${(p.nama || "?")[0].toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-weight:700">${p.nama || "Anonim"}</div>
+          <div class="text-muted text-sm">${p.email || ""}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:800;color:var(--primary)">⭐ ${p.totalPoin ?? 0}</div>
+          <div class="text-sm text-muted">${p.jumlahLaporan} laporan</div>
+        </div>
+      </div>`,
+                )
+                .join("")
+            : '<p class="text-center text-muted" style="padding:2rem">Tidak ada data pelapor</p>';
+      }
+
+      // ─── GENERATE PDF ──────────────────────────────────────────────────────────────
+      // FIX BUG #3: Cek keberadaan library jsPDF sebelum lanjut
+      function generatePDF() {
+        if (!dataRekap) {
+          toast("Muat data rekap dulu!", "error");
+          return;
+        }
+
+        // Cek library jsPDF benar-benar sudah ter-load
+        if (
+          typeof window.jspdf === "undefined" ||
+          typeof window.jspdf.jsPDF === "undefined"
+        ) {
+          toast("Library PDF belum siap. Coba refresh halaman (F5)!", "error");
+          console.error(
+            "[SIJARAK] window.jspdf tidak ditemukan. Pastikan CDN unpkg.com dapat diakses.",
+          );
+          return;
+        }
+
+        const btnPDF = document.getElementById("btn-generate-pdf");
+        btnPDF.disabled = true;
+        btnPDF.textContent = "⏳ Membuat PDF...";
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4",
+          });
+          const PW = doc.internal.pageSize.getWidth();
+          const PH = doc.internal.pageSize.getHeight();
+          const margin = 15;
+          const {
+            meta,
+            ringkasan,
+            perTingkat,
+            perJenis,
+            topPelapor,
+            daftarLaporan,
+          } = dataRekap;
+
+          // ── Halaman 1: Cover ──────────────────────────────────────
+          doc.setFillColor(15, 23, 42);
+          doc.rect(0, 0, PW, 60, "F");
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(22);
+          doc.text("SIJARAK", margin, 22);
+
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(200, 210, 220);
+          doc.text("Sistem Cerdas Jalan Rusak", margin, 30);
+
+          doc.setFontSize(16);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(249, 115, 22);
+          doc.text("LAPORAN REKAP KERUSAKAN JALAN", margin, 44);
+
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(200, 210, 220);
+          doc.text(meta.label, margin, 53);
+
+          // Garis oranye
+          doc.setDrawColor(249, 115, 22);
+          doc.setLineWidth(1.5);
+          doc.line(0, 60, PW, 60);
+
+          // Info dokumen
+          let y = 75;
+          doc.setTextColor(50, 50, 50);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+
+          const infoRows = [
+            ["Periode", meta.label],
+            [
+              "Tanggal Awal",
+              new Date(meta.awal).toLocaleDateString("id-ID", {
+                dateStyle: "long",
+              }),
+            ],
+            [
+              "Tanggal Akhir",
+              new Date(meta.akhir).toLocaleDateString("id-ID", {
+                dateStyle: "long",
+              }),
+            ],
+            ["Dibuat Oleh", (meta.dibuatOleh || "-") + " (Admin)"],
+            ["Dibuat Pada", new Date(meta.dibuatPada).toLocaleString("id-ID")],
+          ];
+          infoRows.forEach(([k, v]) => {
+            doc.setFont("helvetica", "bold");
+            doc.text(k + ":", margin, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(v), margin + 40, y);
+            y += 8;
+          });
+
+          // Kotak Ringkasan
+          y += 6;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.setTextColor(15, 23, 42);
+          doc.text("RINGKASAN STATISTIK", margin, y);
+          y += 6;
+
+          const statBoxes = [
+            {
+              label: "Total Laporan",
+              nilai: ringkasan.totalLaporan,
+              warna: [249, 115, 22],
+            },
+            {
+              label: "Pending",
+              nilai: ringkasan.pending,
+              warna: [245, 158, 11],
+            },
+            {
+              label: "Diproses",
+              nilai: ringkasan.diproses,
+              warna: [59, 130, 246],
+            },
+            {
+              label: "Selesai",
+              nilai: ringkasan.selesai,
+              warna: [34, 197, 94],
+            },
+            {
+              label: "Ditolak",
+              nilai: ringkasan.ditolak,
+              warna: [239, 68, 68],
+            },
+            {
+              label: "Total Poin",
+              nilai: ringkasan.totalPoin,
+              warna: [168, 85, 247],
+            },
+          ];
+
+          const boxW = (PW - margin * 2 - 10) / 3;
+          const boxH = 24;
+          statBoxes.forEach((s, i) => {
+            const col = i % 3;
+            const row = Math.floor(i / 3);
+            const bx = margin + col * (boxW + 5);
+            const by = y + row * (boxH + 5);
+            doc.setFillColor(...s.warna);
+            doc.roundedRect(bx, by, boxW, boxH, 3, 3, "F");
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text(String(s.nilai ?? 0), bx + boxW / 2, by + 13, {
+              align: "center",
+            });
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text(s.label, bx + boxW / 2, by + 20, { align: "center" });
+          });
+
+          y += 2 * (boxH + 5) + 10;
+
+          // ── Halaman 2: Distribusi & Top Pelapor ──────────────────
+          doc.addPage();
+          y = margin;
+
+          const subHeader = (judul, yPos) => {
+            doc.setFillColor(249, 115, 22);
+            doc.rect(margin, yPos, PW - margin * 2, 0.5, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(15, 23, 42);
+            doc.text(judul, margin, yPos + 8);
+            return yPos + 14;
+          };
+
+          y = subHeader("DISTRIBUSI TINGKAT KERUSAKAN", y);
+          const labelTingkat = {
+            ringan: "Ringan",
+            sedang: "Sedang",
+            berat: "Berat",
+            sangat_berat: "Sangat Berat",
+          };
+          const warnaTingkat = {
+            ringan: [34, 197, 94],
+            sedang: [245, 158, 11],
+            berat: [249, 115, 22],
+            sangat_berat: [239, 68, 68],
+          };
+          const totalT = perTingkat.reduce((s, t) => s + t.jumlah, 0) || 1;
+          perTingkat.forEach((t) => {
+            const barW = ((PW - margin * 2 - 60) * t.jumlah) / totalT;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 50);
+            doc.text(labelTingkat[t._id] || t._id, margin, y + 4);
+            doc.setFillColor(...(warnaTingkat[t._id] || [100, 100, 100]));
+            doc.roundedRect(
+              margin + 35,
+              y - 2,
+              Math.max(barW, 1),
+              8,
+              2,
+              2,
+              "F",
+            );
+            doc.setFont("helvetica", "bold");
+            doc.text(
+              `${t.jumlah} (${Math.round((t.jumlah / totalT) * 100)}%)`,
+              margin + 35 + barW + 3,
+              y + 4,
+            );
+            y += 12;
+          });
+
+          y += 5;
+          y = subHeader("DISTRIBUSI JENIS KERUSAKAN", y);
+          const labelJenis = {
+            berlubang: "Berlubang",
+            retak: "Retak/Pecah",
+            amblas: "Amblas",
+            longsor: "Longsor",
+            banjir: "Tergenang",
+            lainnya: "Lainnya",
+          };
+          const totalJ = perJenis.reduce((s, j) => s + j.jumlah, 0) || 1;
+          perJenis.forEach((j) => {
+            const barW = ((PW - margin * 2 - 60) * j.jumlah) / totalJ;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 50);
+            doc.text(labelJenis[j._id] || j._id, margin, y + 4);
+            doc.setFillColor(59, 130, 246);
+            doc.roundedRect(
+              margin + 35,
+              y - 2,
+              Math.max(barW, 1),
+              8,
+              2,
+              2,
+              "F",
+            );
+            doc.setFont("helvetica", "bold");
+            doc.text(
+              `${j.jumlah} (${Math.round((j.jumlah / totalJ) * 100)}%)`,
+              margin + 35 + barW + 3,
+              y + 4,
+            );
+            y += 12;
+          });
+
+          if (topPelapor.length > 0) {
+            y += 5;
+            y = subHeader("TOP PELAPOR AKTIF", y);
+            doc.autoTable({
+              startY: y,
+              head: [
+                ["#", "Nama Pelapor", "Email", "Jml Laporan", "Total Poin"],
+              ],
+              body: topPelapor.map((p, i) => [
+                i + 1,
+                p.nama || "-",
+                p.email || "-",
+                p.jumlahLaporan,
+                p.totalPoin ?? 0,
+              ]),
+              styles: { fontSize: 9, cellPadding: 4 },
+              headStyles: {
+                fillColor: [15, 23, 42],
+                textColor: [255, 255, 255],
+                fontStyle: "bold",
+              },
+              alternateRowStyles: { fillColor: [248, 250, 252] },
+              columnStyles: {
+                0: { cellWidth: 12, halign: "center" },
+                3: { halign: "center" },
+                4: {
+                  halign: "center",
+                  fontStyle: "bold",
+                  textColor: [249, 115, 22],
+                },
+              },
+              margin: { left: margin, right: margin },
+            });
+            y = doc.lastAutoTable.finalY + 10;
+          }
+
+          // ── Halaman 3: Daftar Lengkap ─────────────────────────────
+          doc.addPage();
+          y = margin;
+          y = subHeader("DAFTAR LENGKAP LAPORAN", y);
+
+          if (daftarLaporan.length > 0) {
+            doc.autoTable({
+              startY: y,
+              head: [
+                [
+                  "#",
+                  "Judul",
+                  "Pelapor",
+                  "Lokasi",
+                  "Tingkat",
+                  "Status",
+                  "Poin",
+                  "Tanggal",
+                ],
+              ],
+              body: daftarLaporan.map((l, i) => [
+                i + 1,
+                (l.judul || "").length > 30
+                  ? l.judul.substring(0, 30) + "..."
+                  : l.judul || "-",
+                l.pelapor?.nama || "-",
+                (l.lokasi?.alamat || "-").substring(0, 25),
+                l.tingkatKerusakan || "-",
+                l.status || "-",
+                l.poinDiberikan ?? 0,
+                new Date(l.createdAt).toLocaleDateString("id-ID"),
+              ]),
+              styles: { fontSize: 8, cellPadding: 3 },
+              headStyles: {
+                fillColor: [15, 23, 42],
+                textColor: [255, 255, 255],
+                fontStyle: "bold",
+                fontSize: 8,
+              },
+              alternateRowStyles: { fillColor: [248, 250, 252] },
+              columnStyles: {
+                0: { cellWidth: 8, halign: "center" },
+                1: { cellWidth: 45 },
+                2: { cellWidth: 28 },
+                3: { cellWidth: 35 },
+                4: { cellWidth: 22, halign: "center" },
+                5: { cellWidth: 20, halign: "center" },
+                6: {
+                  cellWidth: 14,
+                  halign: "center",
+                  fontStyle: "bold",
+                  textColor: [249, 115, 22],
+                },
+                7: { cellWidth: 22, halign: "center" },
+              },
+              margin: { left: margin, right: margin },
+              didParseCell: (data) => {
+                if (data.column.index === 5 && data.section === "body") {
+                  const st = data.cell.text[0];
+                  const warna = {
+                    pending: [245, 158, 11],
+                    diproses: [59, 130, 246],
+                    selesai: [34, 197, 94],
+                    ditolak: [239, 68, 68],
+                  };
+                  if (warna[st]) data.cell.styles.textColor = warna[st];
+                }
+              },
+            });
+          } else {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Tidak ada laporan pada periode ini.", margin, y + 10);
+          }
+
+          // ── Footer setiap halaman ──────────────────────────────────
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let p = 1; p <= totalPages; p++) {
+            doc.setPage(p);
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, PH - 12, PW, 12, "F");
+            doc.setTextColor(180, 190, 200);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text(
+              "SIJARAK — Sistem Cerdas Jalan Rusak | Teknik Informatika PENS",
+              margin,
+              PH - 4,
+            );
+            doc.text(`Halaman ${p} dari ${totalPages}`, PW - margin, PH - 4, {
+              align: "right",
+            });
+          }
+
+          // ── Simpan ────────────────────────────────────────────────
+          const nama = `SIJARAK_Rekap_${(meta.label || "rekap").replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+          doc.save(nama);
+          toast(`PDF berhasil didownload: ${nama} ✅`);
+        } catch (pdfErr) {
+          console.error("[SIJARAK] generatePDF error:", pdfErr);
+          toast("Gagal membuat PDF: " + pdfErr.message, "error");
+        } finally {
+          btnPDF.disabled = false;
+          btnPDF.textContent = "📥 Download PDF";
+        }
+      }
+
+      // ─── INIT ──────────────────────────────────────────────────────────────────────
+      muatOpsi();
+    </script>
+  </body>
+</html>
